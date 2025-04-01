@@ -1,4 +1,4 @@
-import { Direction } from '@sanjo/mmog-shared/Direction.js'
+import { Direction } from '@/shared/Direction.js'
 import { hasFlag } from './hasFlag.js'
 import { SPEED } from './speed.js'
 export function updatePosition(object, timeElapsed) {
