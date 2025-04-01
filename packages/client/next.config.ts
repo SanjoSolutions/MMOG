@@ -1,5 +1,6 @@
-/** @type {import("next").NextConfig} */
-export default {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       ".js": [".ts", ".js"],
@@ -11,3 +12,5 @@ export default {
     return webpackConfig;
   },
 };
+
+export default nextConfig;

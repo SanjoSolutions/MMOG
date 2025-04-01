@@ -1,0 +1,66 @@
+{
+  "bodyTypeName": "female",
+  "url": "http://localhost/#?body=Body_color_light&head=Human_female_light&sex=female&hat=Santa_brown&hair=Wavy_dark_brown&dress=Sash_dress_green&shoes=Slippers_walnut&vest=none&clothes=none&bracers=none&nose=Straight_nose_light&eyes=Eyes_blue&ears=none",
+  "spritesheets": "http://localhost/spritesheets/",
+  "version": 1,
+  "datetime": "12/27/2023, 6:05:52 AM",
+  "credits": "Authors: Benjamin K. Smith (BenCreating), bluecarrot16, TheraHedwig, Evert, MuffinElZangano, Durrani, Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike), Thane Brimhall (pennomi), Nila122, laetissima, Joe White, Luke Mehl\n\n- body/bodies/female/universal/light.png: by Benjamin K. Smith (BenCreating), bluecarrot16, TheraHedwig, Evert, MuffinElZangano, Durrani, Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike). License(s): OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0. \n    - https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles\n    - https://opengameart.org/content/lpc-medieval-fantasy-character-sprites\n    - https://opengameart.org/content/lpc-ladies\n    - https://opengameart.org/content/lpc-7-womens-shirts\n    - https://opengameart.org/content/lpc-jump-expanded\n\n- head/heads/human_female/universal/light.png: by bluecarrot16, Benjamin K. Smith (BenCreating), Stephen Challener (Redshrike). License(s): OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0. \n    - https://opengameart.org/content/\n    - https://opengameart.org/content/lpc-character-bases\n\n- head/nose/straight/light.png: by Thane Brimhall (pennomi), Matthew Krohn (makrohn). License(s): GPL 3.0, CC-BY-SA 3.0. \n    - https://opengameart.org/content/lpc-base-character-expressions\n\n- eyes/male/blue.png: by Matthew Krohn (makrohn), Stephen Challener (Redshrike). License(s): CC-BY-SA 3.0, GPL 3.0. \n    - https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles\n\n- hair/wavy/female/dark_brown.png: by Nila122. License(s): CC-BY-SA 3.0, GPL 2.0, GPL 3.0. \n    - https://opengameart.org/content/3-hairs-for-lpc\n\n- hat/santa/male/brown.png: by bluecarrot16. License(s): OGA-BY 3.0, GPL 3.0. \n    - https://opengameart.org/content/lpc-santa\n\n- dress/sash/female/green.png: by bluecarrot16, Thane Brimhall (pennomi), laetissima, Matthew Krohn (makrohn). License(s): CC-BY-SA 3.0, GPL 3.0. \n    - https://opengameart.org/content/lpc-2-characters\n\n- feet/slippers/female/walnut.png: by bluecarrot16, Joe White, Luke Mehl. License(s): CC-BY-SA 3.0, GPL 3.0. \n    - https://opengameart.org/content/female-mage-clothing-set\n    - http://opengameart.org/content/lpc-clothing-updates",
+  "layers": [
+    {
+      "fileName": "body/bodies/female/universal/light.png",
+      "zPos": 10,
+      "parentName": "body",
+      "name": "Body color",
+      "variant": "light"
+    },
+    {
+      "fileName": "feet/slippers/female/walnut.png",
+      "zPos": 15,
+      "parentName": "shoes",
+      "name": "Slippers",
+      "variant": "walnut"
+    },
+    {
+      "fileName": "dress/sash/female/green.png",
+      "zPos": 30,
+      "parentName": "dress",
+      "name": "Sash dress",
+      "variant": "green"
+    },
+    {
+      "fileName": "head/heads/human_female/universal/light.png",
+      "zPos": 100,
+      "parentName": "head",
+      "name": "Human female",
+      "variant": "light"
+    },
+    {
+      "fileName": "head/nose/straight/light.png",
+      "zPos": 105,
+      "parentName": "nose",
+      "name": "Straight nose",
+      "variant": "light"
+    },
+    {
+      "fileName": "eyes/male/blue.png",
+      "zPos": 105,
+      "parentName": "eyes",
+      "name": "Eyes",
+      "variant": "blue"
+    },
+    {
+      "fileName": "hair/wavy/female/dark_brown.png",
+      "zPos": 120,
+      "parentName": "hair",
+      "name": "Wavy",
+      "variant": "dark brown"
+    },
+    {
+      "fileName": "hat/santa/male/brown.png",
+      "zPos": 130,
+      "parentName": "hat",
+      "name": "Santa",
+      "variant": "brown"
+    }
+  ]
+}

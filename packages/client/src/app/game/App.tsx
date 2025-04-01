@@ -1,56 +1,57 @@
-'use client'
+"use client"
 
+import { Character } from "@/game-engine/Character.js"
+import { createAnimatedSprite } from "@/game-engine/createAnimatedSprite.js"
+import { CharacterWithOneSpritesheet } from "@/game-engine/index.js"
+import { Object } from "@/game-engine/Object.js"
 import {
   compressMoveDataWithI,
   MessageType,
   MoveData,
-} from '@/shared/communication/communication.js'
-import { decompressMoveFromServerData } from '@/shared/communication/messagesFromServer.js'
-import { Direction } from '@/shared/Direction.js'
-import { ObjectType } from '@/shared/ObjectType.js'
-import { PlantType } from '@/shared/PlantType.js'
-import { createClient, retrieveUser } from '@/utils/supabase/client.js'
-import '@aws-amplify/ui-react/styles.css'
-import { Application as PixiApplication } from '@pixi/react'
-import { Character } from '@sanjo/game-engine/Character.js'
-import { createAnimatedSprite } from '@sanjo/game-engine/createAnimatedSprite.js'
-import { Object } from '@sanjo/game-engine/Object.js'
-import { Hub } from 'aws-amplify'
-import { debounce } from 'lodash-es'
+} from "@/shared/communication/communication.js"
+import { decompressMoveFromServerData } from "@/shared/communication/messagesFromServer.js"
+import { Direction } from "@/shared/Direction.js"
+import { ObjectType } from "@/shared/ObjectType.js"
+import { PlantType } from "@/shared/PlantType.js"
+import { createClient, retrieveUser } from "@/utils/supabase/client.js"
+import "@aws-amplify/ui-react/styles.css"
+import { Application as PixiApplication } from "@pixi/react"
+import { Hub } from "aws-amplify"
+import { debounce } from "lodash-es"
 import {
   AnimatedSprite,
   Assets,
   Container,
   Spritesheet,
   type Application,
-} from 'pixi.js'
+} from "pixi.js"
 
 export function App() {
   return (
     <>
       <PixiApplication
-        backgroundColor='0x2f8136'
+        backgroundColor="0x2f8136"
         resizeTo={
-          typeof document !== 'undefined'
-            ? (document.querySelector('#root') as HTMLDivElement)
+          typeof document !== "undefined"
+            ? (document.querySelector("#root") as HTMLDivElement)
             : undefined
         }
         resolution={
-          typeof window !== 'undefined' ? window.devicePixelRatio : undefined
+          typeof window !== "undefined" ? window.devicePixelRatio : undefined
         }
         onInit={f}
       ></PixiApplication>
-      <div className='links'>
+      <div className="links">
         <a
-          href='#'
-          onClick={event => {
+          href="#"
+          onClick={(event) => {
             event.preventDefault()
             // TODO: Log out
           }}
         >
           Log out
         </a>
-        <a className='credits' href='credits.html' target='_blank'>
+        <a className="credits" href="credits.html" target="_blank">
           Credits
         </a>
       </div>
@@ -59,7 +60,7 @@ export function App() {
 }
 
 async function f(app: Application): Promise<void> {
-  if (window.IS_DEVELOPMENT) {
+  if (process.env.NEXT_PUBLIC_IS_DEVELOPMENT) {
     globalThis.__PIXI_APP__ = app
   }
 
@@ -73,25 +74,25 @@ async function f(app: Application): Promise<void> {
 
   let i = 1
 
-  const { sound } = await import('@pixi/sound')
-  sound.add('music', '/assets/music/TownTheme.mp3')
-  sound.play('music', { loop: true })
+  const { sound } = await import("@pixi/sound")
+  sound.add("music", "/assets/music/TownTheme.mp3")
+  sound.play("music", { loop: true })
 
-  Assets.add({ alias: 'plants', src: '/assets/sprites/plants.json' })
+  Assets.add({ alias: "plants", src: "/assets/sprites/plants.json" })
   const {
     plants: plantsSpritesheet,
   }: {
     plants: Spritesheet
-  } = (await Assets.load(['plants'])) as any
+  } = (await Assets.load(["plants"])) as any
 
   let socket: WebSocket | null = null
 
   try {
     await initializeConnection()
   } catch (error) {
-    if (error === 'No current user') {
-      Hub.listen('auth', async data => {
-        if (data.payload.event === 'signIn') {
+    if (error === "No current user") {
+      Hub.listen("auth", async (data) => {
+        if (data.payload.event === "signIn") {
           await initializeConnection()
         }
       })
@@ -117,7 +118,7 @@ async function f(app: Application): Promise<void> {
     constructor(container: Container) {
       super(container)
       this.sprite.addChild(
-        createAnimatedSprite(plantTextures.get(PlantType.Tomato)!)
+        createAnimatedSprite(plantTextures.get(PlantType.Tomato)!),
       )
     }
 
@@ -152,16 +153,16 @@ async function f(app: Application): Promise<void> {
 
   const objects = new Map<string, Object>()
   const objectsContainer = new Container()
-  const character = new Character(objectsContainer)
+  const character = new CharacterWithOneSpritesheet("/npc_woman.png", app.stage)
   objectsContainer.addChild(character.sprite)
   app.stage.addChild(objectsContainer)
   updateViewport()
 
   const keyStates = new Map([
-    ['KeyA', false],
-    ['KeyD', false],
-    ['KeyW', false],
-    ['KeyS', false],
+    ["KeyA", false],
+    ["KeyD", false],
+    ["KeyW", false],
+    ["KeyS", false],
   ])
 
   interface PointerState {
@@ -174,20 +175,20 @@ async function f(app: Application): Promise<void> {
     position: null,
   }
 
-  window.addEventListener('keydown', function (event) {
+  window.addEventListener("keydown", function (event) {
     if (keyStates.has(event.code)) {
       event.preventDefault()
       keyStates.set(event.code, true)
     }
   })
 
-  window.addEventListener('keyup', function (event) {
+  window.addEventListener("keyup", function (event) {
     if (keyStates.has(event.code)) {
       keyStates.set(event.code, false)
     }
   })
-  ;(app.view as HTMLCanvasElement).addEventListener(
-    'pointerdown',
+  ;(app.canvas as HTMLCanvasElement).addEventListener(
+    "pointerdown",
     function (event) {
       if (event.button === 0) {
         event.preventDefault()
@@ -196,10 +197,10 @@ async function f(app: Application): Promise<void> {
         pointerState.isDown = true
         pointerState.position = { x, y }
       }
-    }
+    },
   )
-  ;(app.view as HTMLCanvasElement).addEventListener(
-    'pointermove',
+  ;(app.canvas as HTMLCanvasElement).addEventListener(
+    "pointermove",
     function (event) {
       if (pointerState.isDown) {
         event.preventDefault()
@@ -207,16 +208,16 @@ async function f(app: Application): Promise<void> {
         const y = event.offsetY
         pointerState.position = { x, y }
       }
-    }
+    },
   )
-  ;(app.view as HTMLCanvasElement).addEventListener(
-    'pointerup',
+  ;(app.canvas as HTMLCanvasElement).addEventListener(
+    "pointerup",
     function (event) {
       if (event.button === 0) {
         pointerState.isDown = false
         pointerState.position = null
       }
-    }
+    },
   )
 
   const sendMoveToServer = function sendMoveToServer(data: MoveData) {
@@ -232,7 +233,7 @@ async function f(app: Application): Promise<void> {
             ...data,
             i,
           }),
-        })
+        }),
       )
       i++
     }
@@ -258,7 +259,7 @@ async function f(app: Application): Promise<void> {
   }
 
   function convertKeysDownToDirection(
-    keysDownAndPointerState: KeysDown & { pointerState: PointerState }
+    keysDownAndPointerState: KeysDown & { pointerState: PointerState },
   ): Direction {
     const { left, right, up, down } = cancelOutKeys(keysDownAndPointerState)
     if (left || right || up || down) {
@@ -299,7 +300,7 @@ async function f(app: Application): Promise<void> {
   }
 
   function convertKeysDownToIsMoving(
-    keysDownAndPointerState: KeysDown & { pointerState: PointerState }
+    keysDownAndPointerState: KeysDown & { pointerState: PointerState },
   ): boolean {
     const { left, right, up, down } = cancelOutKeys(keysDownAndPointerState)
     return Boolean(
@@ -316,7 +317,7 @@ async function f(app: Application): Promise<void> {
           (pointerState.position.y <
             window.innerHeight / 2 - 0.5 * clearArea.height ||
             pointerState.position.y >
-              window.innerHeight / 2 + 0.5 * clearArea.height))
+              window.innerHeight / 2 + 0.5 * clearArea.height)),
     )
   }
 
@@ -331,10 +332,10 @@ async function f(app: Application): Promise<void> {
   }
 
   app.ticker.add(() => {
-    const left = keyStates.get('KeyA')!
-    const right = keyStates.get('KeyD')!
-    const up = keyStates.get('KeyW')!
-    const down = keyStates.get('KeyS')!
+    const left = keyStates.get("KeyA")!
+    const right = keyStates.get("KeyD")!
+    const up = keyStates.get("KeyW")!
+    const down = keyStates.get("KeyS")!
 
     const isMoving = convertKeysDownToIsMoving({
       left,
@@ -397,14 +398,14 @@ async function f(app: Application): Promise<void> {
   // const TILE_WIDTH = 32
   // const TILE_HEIGHT = 32
   //
-  // for (let y = 0; y < app.view.height; y += TILE_HEIGHT) {
-  //   for (let x = 0; x < app.view.width; x += TILE_WIDTH) {
+  // for (let y = 0; y < app.canvas.height; y += TILE_HEIGHT) {
+  //   for (let x = 0; x < app.canvas.width; x += TILE_WIDTH) {
   //     tileMap.tile(textureName, x, y)
   //   }
   // }
 
   async function initializeConnection(): Promise<void> {
-    socket = new WebSocket(process.env.WEBSOCKET_API_URL!)
+    socket = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_API_URL!)
     socket.onmessage = function (event) {
       const body = JSON.parse(event.data)
       const { type, data } = body
@@ -473,7 +474,7 @@ async function f(app: Application): Promise<void> {
       } else if (type === ObjectType.Plant) {
         object = new Plant(objectsContainer)
       } else {
-        throw new Error('Other type?')
+        throw new Error("Other type?")
       }
       objectsContainer.addChild(object.sprite)
       objects.set(id, object)
@@ -486,15 +487,15 @@ async function f(app: Application): Promise<void> {
       socket.send(
         JSON.stringify({
           type: MessageType.RequestObjects,
-        })
+        }),
       )
     }
   }
 
   window.addEventListener(
-    'resize',
+    "resize",
     debounce(function () {
       updateViewport()
-    }, 300)
+    }, 300),
   )
 }
