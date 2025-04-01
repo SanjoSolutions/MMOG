@@ -3,3 +3,5 @@ packages:
 onlyBuiltDependencies:
   - '@sanjo/esbuild'
   - esbuild
+networkConcurrency: 1
+maxsockets: 1
