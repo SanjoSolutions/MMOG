@@ -1,20 +1,20 @@
-import type { ApiGatewayManagementApiClient } from "@aws-sdk/client-apigatewaymanagementapi"
-import type { MoveFromServerData } from "../../shared/communication/messagesFromServer.js"
-import type { ID } from "../../shared/ID.js"
-import { createScanCommandInputForOtherCloseByConnections } from "../database/createScanCommandInputForOtherCloseByConnections.js"
-import { scanThroughAll } from "../database/scanThroughAll.js"
-import { sendMovementToClient } from "./sendMovementToClient.js"
+import type { ApiGatewayManagementApiClient } from '@aws-sdk/client-apigatewaymanagementapi'
+import type { MoveFromServerData } from '@sanjo/mmog-shared/communication/messagesFromServer.js'
+import type { ID } from '@sanjo/mmog-shared/ID.js'
+import { createScanCommandInputForOtherCloseByConnections } from '../database/createScanCommandInputForOtherCloseByConnections.js'
+import { scanThroughAll } from '../database/scanThroughAll.js'
+import { sendMovementToClient } from './sendMovementToClient.js'
 
 export async function sendMovementToOtherClients(
   apiGwManagementApi: ApiGatewayManagementApiClient,
   connectionId: string,
   userID: ID,
-  object: MoveFromServerData,
+  object: MoveFromServerData
 ): Promise<void> {
   await scanThroughAll(
     () =>
       createScanCommandInputForOtherCloseByConnections(object, connectionId),
-    async (output) => {
+    async output => {
       const items = output.Items
       if (items) {
         await Promise.all(
@@ -23,11 +23,11 @@ export async function sendMovementToOtherClients(
               apiGwManagementApi,
               object,
               connectionId,
-              userID,
-            ),
-          ),
+              userID
+            )
+          )
         )
       }
-    },
+    }
   )
 }

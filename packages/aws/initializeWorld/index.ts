@@ -1,11 +1,11 @@
-import { PutCommand } from "@aws-sdk/lib-dynamodb"
-import type { APIGatewayProxyResultV2 } from "aws-lambda/trigger/api-gateway-proxy.js"
-import { randomUUID } from "node:crypto"
-import type { Plant } from "../../shared/database.js"
-import { Direction } from "../../shared/Direction.js"
-import { ObjectType } from "../../shared/ObjectType.js"
-import { PlantType } from "../../shared/PlantType.js"
-import { createDynamoDBDocumentClient } from "../database/createDynamoDBDocumentClient.js"
+import { PutCommand } from '@aws-sdk/lib-dynamodb'
+import type { Plant } from '@sanjo/mmog-shared/database.js'
+import { Direction } from '@sanjo/mmog-shared/Direction.js'
+import { ObjectType } from '@sanjo/mmog-shared/ObjectType.js'
+import { PlantType } from '@sanjo/mmog-shared/PlantType.js'
+import type { APIGatewayProxyResultV2 } from 'aws-lambda/trigger/api-gateway-proxy.js'
+import { randomUUID } from 'node:crypto'
+import { createDynamoDBDocumentClient } from '../database/createDynamoDBDocumentClient.js'
 
 Error.stackTraceLimit = Infinity
 
@@ -42,7 +42,7 @@ export async function handler(): Promise<APIGatewayProxyResultV2> {
     new PutCommand({
       TableName: OBJECTS_TABLE_NAME,
       Item: plant,
-    }),
+    })
   )
 
   return { statusCode: 200 }

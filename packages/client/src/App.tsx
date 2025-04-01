@@ -1,49 +1,49 @@
-import { Authenticator } from "@aws-amplify/ui-react"
-import "@aws-amplify/ui-react/styles.css"
-import { Stage } from "@pixi/react"
-import { sound } from "@pixi/sound"
-import { Auth, Hub } from "aws-amplify"
-import { debounce } from "lodash-es"
-import type { Application } from "pixi.js"
-import { AnimatedSprite, Assets, Container, Spritesheet } from "pixi.js"
-import React from "react"
+import { Authenticator } from '@aws-amplify/ui-react'
+import '@aws-amplify/ui-react/styles.css'
+import { Stage } from '@pixi/react'
+import { sound } from '@pixi/sound'
+import { Character } from '@sanjo/game-engine/Character.js'
+import { createAnimatedSprite } from '@sanjo/game-engine/createAnimatedSprite.js'
+import { Object } from '@sanjo/game-engine/Object.js'
 import {
   compressMoveDataWithI,
   MessageType,
   MoveData,
-} from "../../shared/communication/communication.js"
-import { decompressMoveFromServerData } from "../../shared/communication/messagesFromServer.js"
-import { Direction } from "../../shared/Direction.js"
-import { ObjectType } from "../../shared/ObjectType.js"
-import { PlantType } from "../../shared/PlantType.js"
-import { Character } from "../../../../../@sanjo/game-engine/src/Character.js"
-import { createAnimatedSprite } from "../../../../../@sanjo/game-engine/src/createAnimatedSprite.js"
-import { Object } from "../../../../../@sanjo/game-engine/src/Object.js"
+} from '@sanjo/mmog-shared/communication/communication.js'
+import { decompressMoveFromServerData } from '@sanjo/mmog-shared/communication/messagesFromServer.js'
+import { Direction } from '@sanjo/mmog-shared/Direction.js'
+import { ObjectType } from '@sanjo/mmog-shared/ObjectType.js'
+import { PlantType } from '@sanjo/mmog-shared/PlantType.js'
+import { Auth, Hub } from 'aws-amplify'
+import { debounce } from 'lodash-es'
+import type { Application } from 'pixi.js'
+import { AnimatedSprite, Assets, Container, Spritesheet } from 'pixi.js'
+import React from 'react'
 
 export function App() {
   return (
-    <Authenticator loginMechanisms={["email"]} signUpAttributes={[]}>
+    <Authenticator loginMechanisms={['email']} signUpAttributes={[]}>
       {({ signOut, user }) => {
         return (
           <>
-            <div className="links">
+            <div className='links'>
               <a
-                href="#"
-                onClick={(event) => {
+                href='#'
+                onClick={event => {
                   event.preventDefault()
                   signOut()
                 }}
               >
                 Log out
               </a>
-              <a className="credits" href="credits.html" target="_blank">
+              <a className='credits' href='credits.html' target='_blank'>
                 Credits
               </a>
             </div>
             <Stage
               options={{
                 backgroundColor: 0x2f8136,
-                resizeTo: document.querySelector("#root") as HTMLDivElement,
+                resizeTo: document.querySelector('#root') as HTMLDivElement,
                 resolution: window.devicePixelRatio,
               }}
               onMount={f}
@@ -67,24 +67,24 @@ async function f(app: Application): Promise<void> {
 
   let i = 1
 
-  sound.add("music", "assets/music/TownTheme.mp3")
-  sound.play("music", { loop: true })
+  sound.add('music', 'assets/music/TownTheme.mp3')
+  sound.play('music', { loop: true })
 
-  Assets.add("plants", "assets/sprites/plants.json")
+  Assets.add('plants', 'assets/sprites/plants.json')
   const {
     plants: plantsSpritesheet,
   }: {
     plants: Spritesheet
-  } = (await Assets.load(["plants"])) as any
+  } = (await Assets.load(['plants'])) as any
 
   let socket: WebSocket | null = null
 
   try {
     await initializeConnection()
   } catch (error) {
-    if (error === "No current user") {
-      Hub.listen("auth", async (data) => {
-        if (data.payload.event === "signIn") {
+    if (error === 'No current user') {
+      Hub.listen('auth', async data => {
+        if (data.payload.event === 'signIn') {
           await initializeConnection()
         }
       })
@@ -110,7 +110,7 @@ async function f(app: Application): Promise<void> {
     constructor(container: Container) {
       super(container)
       this.sprite.addChild(
-        createAnimatedSprite(plantTextures.get(PlantType.Tomato)!),
+        createAnimatedSprite(plantTextures.get(PlantType.Tomato)!)
       )
     }
 
@@ -151,10 +151,10 @@ async function f(app: Application): Promise<void> {
   updateViewport()
 
   const keyStates = new Map([
-    ["KeyA", false],
-    ["KeyD", false],
-    ["KeyW", false],
-    ["KeyS", false],
+    ['KeyA', false],
+    ['KeyD', false],
+    ['KeyW', false],
+    ['KeyS', false],
   ])
 
   interface PointerState {
@@ -167,20 +167,20 @@ async function f(app: Application): Promise<void> {
     position: null,
   }
 
-  window.addEventListener("keydown", function (event) {
+  window.addEventListener('keydown', function (event) {
     if (keyStates.has(event.code)) {
       event.preventDefault()
       keyStates.set(event.code, true)
     }
   })
 
-  window.addEventListener("keyup", function (event) {
+  window.addEventListener('keyup', function (event) {
     if (keyStates.has(event.code)) {
       keyStates.set(event.code, false)
     }
   })
   ;(app.view as HTMLCanvasElement).addEventListener(
-    "pointerdown",
+    'pointerdown',
     function (event) {
       if (event.button === 0) {
         event.preventDefault()
@@ -189,10 +189,10 @@ async function f(app: Application): Promise<void> {
         pointerState.isDown = true
         pointerState.position = { x, y }
       }
-    },
+    }
   )
   ;(app.view as HTMLCanvasElement).addEventListener(
-    "pointermove",
+    'pointermove',
     function (event) {
       if (pointerState.isDown) {
         event.preventDefault()
@@ -200,16 +200,16 @@ async function f(app: Application): Promise<void> {
         const y = event.offsetY
         pointerState.position = { x, y }
       }
-    },
+    }
   )
   ;(app.view as HTMLCanvasElement).addEventListener(
-    "pointerup",
+    'pointerup',
     function (event) {
       if (event.button === 0) {
         pointerState.isDown = false
         pointerState.position = null
       }
-    },
+    }
   )
 
   const sendMoveToServer = function sendMoveToServer(data: MoveData) {
@@ -225,7 +225,7 @@ async function f(app: Application): Promise<void> {
             ...data,
             i,
           }),
-        }),
+        })
       )
       i++
     }
@@ -251,7 +251,7 @@ async function f(app: Application): Promise<void> {
   }
 
   function convertKeysDownToDirection(
-    keysDownAndPointerState: KeysDown & { pointerState: PointerState },
+    keysDownAndPointerState: KeysDown & { pointerState: PointerState }
   ): Direction {
     const { left, right, up, down } = cancelOutKeys(keysDownAndPointerState)
     if (left || right || up || down) {
@@ -292,7 +292,7 @@ async function f(app: Application): Promise<void> {
   }
 
   function convertKeysDownToIsMoving(
-    keysDownAndPointerState: KeysDown & { pointerState: PointerState },
+    keysDownAndPointerState: KeysDown & { pointerState: PointerState }
   ): boolean {
     const { left, right, up, down } = cancelOutKeys(keysDownAndPointerState)
     return Boolean(
@@ -309,7 +309,7 @@ async function f(app: Application): Promise<void> {
           (pointerState.position.y <
             window.innerHeight / 2 - 0.5 * clearArea.height ||
             pointerState.position.y >
-              window.innerHeight / 2 + 0.5 * clearArea.height)),
+              window.innerHeight / 2 + 0.5 * clearArea.height))
     )
   }
 
@@ -324,10 +324,10 @@ async function f(app: Application): Promise<void> {
   }
 
   app.ticker.add(() => {
-    const left = keyStates.get("KeyA")!
-    const right = keyStates.get("KeyD")!
-    const up = keyStates.get("KeyW")!
-    const down = keyStates.get("KeyS")!
+    const left = keyStates.get('KeyA')!
+    const right = keyStates.get('KeyD')!
+    const up = keyStates.get('KeyW')!
+    const down = keyStates.get('KeyS')!
 
     const isMoving = convertKeysDownToIsMoving({
       left,
@@ -468,7 +468,7 @@ async function f(app: Application): Promise<void> {
       } else if (type === ObjectType.Plant) {
         object = new Plant(objectsContainer)
       } else {
-        throw new Error("Other type?")
+        throw new Error('Other type?')
       }
       objectsContainer.addChild(object.sprite)
       objects.set(id, object)
@@ -481,15 +481,15 @@ async function f(app: Application): Promise<void> {
       socket.send(
         JSON.stringify({
           type: MessageType.RequestObjects,
-        }),
+        })
       )
     }
   }
 
   window.addEventListener(
-    "resize",
+    'resize',
     debounce(function () {
       updateViewport()
-    }, 300),
+    }, 300)
   )
 }

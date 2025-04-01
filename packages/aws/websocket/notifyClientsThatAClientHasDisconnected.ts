@@ -1,16 +1,16 @@
 import {
   type ApiGatewayManagementApiClient,
   PostToConnectionCommand,
-} from "@aws-sdk/client-apigatewaymanagementapi"
-import { MessageType } from "../../shared/communication/communication.js"
-import { createScanCommandInputForCloseByConnections } from "../database/createScanCommandInputForCloseByConnections.js"
-import { retrievePositionOfObjectOfConnection } from "../database/retrievePositionOfObjectOfConnection.js"
-import { scanThroughAll } from "../database/scanThroughAll.js"
-import { postToConnection } from "./postToConnection.js"
+} from '@aws-sdk/client-apigatewaymanagementapi'
+import { MessageType } from '@sanjo/mmog-shared/communication/communication.js'
+import { createScanCommandInputForCloseByConnections } from '../database/createScanCommandInputForCloseByConnections.js'
+import { retrievePositionOfObjectOfConnection } from '../database/retrievePositionOfObjectOfConnection.js'
+import { scanThroughAll } from '../database/scanThroughAll.js'
+import { postToConnection } from './postToConnection.js'
 
 export async function notifyClientsThatAClientHasDisconnected(
   apiGwManagementApi: ApiGatewayManagementApiClient,
-  disconnectedClientConnectionId: string,
+  disconnectedClientConnectionId: string
 ): Promise<void> {
   const postData = JSON.stringify({
     type: MessageType.OtherClientDisconnected,
@@ -20,13 +20,13 @@ export async function notifyClientsThatAClientHasDisconnected(
   })
 
   const position = await retrievePositionOfObjectOfConnection(
-    disconnectedClientConnectionId,
+    disconnectedClientConnectionId
   )
 
   if (position) {
     await scanThroughAll(
       () => createScanCommandInputForCloseByConnections(position),
-      async (output) => {
+      async output => {
         const items = output.Items
         if (items) {
           await Promise.all(
@@ -37,13 +37,13 @@ export async function notifyClientsThatAClientHasDisconnected(
                   new PostToConnectionCommand({
                     ConnectionId: connectionId,
                     Data: postData,
-                  }),
+                  })
                 )
               }
-            }),
+            })
           )
         }
-      },
+      }
     )
   }
 }

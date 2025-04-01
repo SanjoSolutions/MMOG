@@ -18,7 +18,7 @@
     "directory": "mmog/packages/client"
   },
   "scripts": {
-    "development": "run.sh",
+    "development": "./run.sh",
     "build": "build.sh"
   },
   "dependencies": {
@@ -27,6 +27,8 @@
     "@pixi/react": "^7.1.1",
     "@pixi/sound": "^5.2.1",
     "@pixi/tilemap": "pixijs/tilemap#123f8530c10bb1de790346d435ad65345ce8b2ae",
+    "@sanjo/game-engine": "file:../game-engine",
+    "@sanjo/mmog-shared": "file:../shared",
     "aws-amplify": "^5.3.10",
     "buffer": "^6.0.3",
     "lodash-es": "^4.17.21",
@@ -35,7 +37,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@sanjo/esbuild": "github:SanjoSolutions/projects#path:/packages/esbuild",
+    "@sanjo/esbuild": "^1.0.0",
     "@types/lodash-es": "^4.17.9",
     "@types/react-dom": "^18.2.7"
   },

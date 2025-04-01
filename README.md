@@ -31,5 +31,5 @@ There is also a server component which runs on EC2.
 
 ```sh
 cd packages/client
-yarn development
+pnpm run development
 ```

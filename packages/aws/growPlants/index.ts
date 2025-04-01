@@ -1,16 +1,16 @@
 import {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
-} from "@aws-sdk/client-apigatewaymanagementapi"
-import { UpdateCommand } from "@aws-sdk/lib-dynamodb"
-import type { ScheduledEvent } from "aws-lambda/trigger/cloudwatch-events.js"
-import { MessageType } from "../../shared/communication/communication.js"
-import type { Plant } from "../../shared/database.js"
-import { ObjectType } from "../../shared/ObjectType.js"
-import { createDynamoDBDocumentClient } from "../database/createDynamoDBDocumentClient.js"
-import { createScanCommandInputForCloseByConnections } from "../database/createScanCommandInputForCloseByConnections.js"
-import { scanThroughAll } from "../database/scanThroughAll.js"
-import { postToConnection } from "../websocket/postToConnection.js"
+} from '@aws-sdk/client-apigatewaymanagementapi'
+import { UpdateCommand } from '@aws-sdk/lib-dynamodb'
+import { MessageType } from '@sanjo/mmog-shared/communication/communication.js'
+import type { Plant } from '@sanjo/mmog-shared/database.js'
+import { ObjectType } from '@sanjo/mmog-shared/ObjectType.js'
+import type { ScheduledEvent } from 'aws-lambda/trigger/cloudwatch-events.js'
+import { createDynamoDBDocumentClient } from '../database/createDynamoDBDocumentClient.js'
+import { createScanCommandInputForCloseByConnections } from '../database/createScanCommandInputForCloseByConnections.js'
+import { scanThroughAll } from '../database/scanThroughAll.js'
+import { postToConnection } from '../websocket/postToConnection.js'
 
 Error.stackTraceLimit = Infinity
 
@@ -26,7 +26,7 @@ const { OBJECTS_TABLE_NAME, API_GATEWAY_URL } = process.env
 
 const database = createDynamoDBDocumentClient()
 const apiGwManagementApi = new ApiGatewayManagementApiClient({
-  apiVersion: "2018-11-29",
+  apiVersion: '2018-11-29',
   endpoint: API_GATEWAY_URL,
 })
 
@@ -34,17 +34,17 @@ export async function handler(event: ScheduledEvent): Promise<void> {
   await scanThroughAll(
     () => ({
       TableName: process.env.OBJECTS_TABLE_NAME,
-      ProjectionExpression: "id, stage, x, y",
-      FilterExpression: "#type = :type AND stage < :maxGrowStage",
+      ProjectionExpression: 'id, stage, x, y',
+      FilterExpression: '#type = :type AND stage < :maxGrowStage',
       ExpressionAttributeValues: {
-        ":type": ObjectType.Plant,
-        ":maxGrowStage": 3,
+        ':type': ObjectType.Plant,
+        ':maxGrowStage': 3,
       },
       ExpressionAttributeNames: {
-        "#type": "type",
+        '#type': 'type',
       },
     }),
-    async (output) => {
+    async output => {
       const items = output.Items
       if (items) {
         await Promise.all(
@@ -53,11 +53,11 @@ export async function handler(event: ScheduledEvent): Promise<void> {
               new UpdateCommand({
                 Key: { id },
                 TableName: OBJECTS_TABLE_NAME,
-                UpdateExpression: "SET stage = stage + :increment",
+                UpdateExpression: 'SET stage = stage + :increment',
                 ExpressionAttributeValues: {
-                  ":increment": 1,
+                  ':increment': 1,
                 },
-              }),
+              })
             )
             await sendPlantHasGrownToClients(apiGwManagementApi, {
               id,
@@ -65,16 +65,16 @@ export async function handler(event: ScheduledEvent): Promise<void> {
               x,
               y,
             })
-          }),
+          })
         )
       }
-    },
+    }
   )
 }
 
 async function sendPlantHasGrownToClients(
   apiGwManagementApi: ApiGatewayManagementApiClient,
-  plant: Pick<Plant, "id" | "stage" | "x" | "y">,
+  plant: Pick<Plant, 'id' | 'stage' | 'x' | 'y'>
 ): Promise<void> {
   const postData = JSON.stringify({
     type: MessageType.PlantHasGrown,
@@ -92,7 +92,7 @@ async function sendPlantHasGrownToClients(
 
   await scanThroughAll(
     () => createScanCommandInputForCloseByConnections(position),
-    async (output) => {
+    async output => {
       const items = output.Items
       if (items) {
         await Promise.all(
@@ -102,11 +102,11 @@ async function sendPlantHasGrownToClients(
               new PostToConnectionCommand({
                 ConnectionId: connectionId,
                 Data: postData,
-              }),
+              })
             )
-          }),
+          })
         )
       }
-    },
+    }
   )
 }

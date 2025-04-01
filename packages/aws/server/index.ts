@@ -1,10 +1,10 @@
-import { ApiGatewayManagementApiClient } from "@aws-sdk/client-apigatewaymanagementapi"
-import type { ScanCommandInput } from "@aws-sdk/lib-dynamodb"
-import type { Connection } from "../../shared/database.js"
-import type { ID } from "../../shared/ID.js"
-import { scanThroughAll } from "../database/scanThroughAll.js"
-import { HALF_HEIGHT, HALF_WIDTH } from "../maximumSupportedResolution.js"
-import { sendMovementToClient } from "../websocket/sendMovementToClient.js"
+import { ApiGatewayManagementApiClient } from '@aws-sdk/client-apigatewaymanagementapi'
+import type { ScanCommandInput } from '@aws-sdk/lib-dynamodb'
+import type { Connection } from '@sanjo/mmog-shared/database.js'
+import type { ID } from '@sanjo/mmog-shared/ID.js'
+import { scanThroughAll } from '../database/scanThroughAll.js'
+import { HALF_HEIGHT, HALF_WIDTH } from '../maximumSupportedResolution.js'
+import { sendMovementToClient } from '../websocket/sendMovementToClient.js'
 
 // Environment variables required:
 // * API_GATEWAY_URL
@@ -18,29 +18,29 @@ async function main() {
     let lastRun = Date.now()
     await scanThroughAll(
       createScanCommandInputForAllConnections,
-      async (output) => {
+      async output => {
         const items = output.Items
         if (items) {
           await Promise.all(
-            items.map((connection) =>
+            items.map(connection =>
               sendObjectsToTheClient(
                 connection as Pick<
                   Connection,
-                  | "id"
-                  | "connectionId"
-                  | "objectsThatHaveBeenSentToTheClient"
-                  | "x"
-                  | "y"
-                >,
-              ),
-            ),
+                  | 'id'
+                  | 'connectionId'
+                  | 'objectsThatHaveBeenSentToTheClient'
+                  | 'x'
+                  | 'y'
+                >
+              )
+            )
           )
         }
-      },
+      }
     )
     const durationToWait = Math.max(
       1000 / TICK_RATE - (Date.now() - lastRun),
-      0,
+      0
     )
     if (durationToWait > 0) {
       await wait(durationToWait)
@@ -51,82 +51,82 @@ async function main() {
 main()
 
 async function wait(duration: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, duration))
+  return new Promise(resolve => setTimeout(resolve, duration))
 }
 
 async function sendObjectsToTheClient(
   connection: Pick<
     Connection,
-    "id" | "connectionId" | "objectsThatHaveBeenSentToTheClient" | "x" | "y"
-  >,
+    'id' | 'connectionId' | 'objectsThatHaveBeenSentToTheClient' | 'x' | 'y'
+  >
 ) {
   const first100ObjectsThatHaveBeenSentToTheClient =
     connection.objectsThatHaveBeenSentToTheClient
       ? connection.objectsThatHaveBeenSentToTheClient.slice(
           0,
-          MAXIMUM_NUMBER_OF_ITEMS_THAT_CAN_BE_IN_IN_EXPRESSION,
+          MAXIMUM_NUMBER_OF_ITEMS_THAT_CAN_BE_IN_IN_EXPRESSION
         )
       : []
   const remainingObjectsThatHaveBeenSentToTheClient = new Set(
     connection.objectsThatHaveBeenSentToTheClient
       ? connection.objectsThatHaveBeenSentToTheClient.slice(
-          MAXIMUM_NUMBER_OF_ITEMS_THAT_CAN_BE_IN_IN_EXPRESSION,
+          MAXIMUM_NUMBER_OF_ITEMS_THAT_CAN_BE_IN_IN_EXPRESSION
         )
-      : [],
+      : []
   )
   await scanThroughAll(
     () =>
       createScanCommandInputForConnectionsToSendToClient(
         connection,
-        first100ObjectsThatHaveBeenSentToTheClient,
+        first100ObjectsThatHaveBeenSentToTheClient
       ),
-    async (output) => {
+    async output => {
       const objects = output.Items as Pick<
         Connection,
-        | "id"
-        | "connectionId"
-        | "x"
-        | "y"
-        | "direction"
-        | "isMoving"
-        | "whenMovingHasChanged"
-        | "i"
+        | 'id'
+        | 'connectionId'
+        | 'x'
+        | 'y'
+        | 'direction'
+        | 'isMoving'
+        | 'whenMovingHasChanged'
+        | 'i'
       >[]
       if (objects) {
-        const objectsToSendToTheClient = objects.filter((object) => {
+        const objectsToSendToTheClient = objects.filter(object => {
           return !remainingObjectsThatHaveBeenSentToTheClient.has(object.id)
         })
         await sendObjectsToTheClient2(
           objectsToSendToTheClient,
-          connection.connectionId,
+          connection.connectionId
         )
       }
-    },
+    }
   )
 }
 
 async function sendObjectsToTheClient2(
   objectsToSendToTheClient: Pick<
     Connection,
-    | "id"
-    | "connectionId"
-    | "x"
-    | "y"
-    | "direction"
-    | "isMoving"
-    | "whenMovingHasChanged"
-    | "i"
+    | 'id'
+    | 'connectionId'
+    | 'x'
+    | 'y'
+    | 'direction'
+    | 'isMoving'
+    | 'whenMovingHasChanged'
+    | 'i'
   >[],
-  connectionId: string,
+  connectionId: string
 ): Promise<void> {
   const apiGwManagementApi = new ApiGatewayManagementApiClient({
-    apiVersion: "2018-11-29",
+    apiVersion: '2018-11-29',
     endpoint: process.env.API_GATEWAY_URL,
   })
   await Promise.all(
-    objectsToSendToTheClient.map((object) =>
-      sendMovementToClient(apiGwManagementApi, object, connectionId),
-    ),
+    objectsToSendToTheClient.map(object =>
+      sendMovementToClient(apiGwManagementApi, object, connectionId)
+    )
   )
 }
 
@@ -134,27 +134,27 @@ function createScanCommandInputForAllConnections(): ScanCommandInput {
   return {
     TableName: process.env.CONNECTIONS_TABLE_NAME,
     ProjectionExpression:
-      "id, connectionId, objectsThatHaveBeenSentToTheClient, x, y",
+      'id, connectionId, objectsThatHaveBeenSentToTheClient, x, y',
   }
 }
 
 function createScanCommandInputForConnectionsToSendToClient(
-  connection: Pick<Connection, "id" | "x" | "y">,
-  objectsThatHaveBeenSentToTheClient: ID[],
+  connection: Pick<Connection, 'id' | 'x' | 'y'>,
+  objectsThatHaveBeenSentToTheClient: ID[]
 ): ScanCommandInput {
   return {
     TableName: process.env.CONNECTIONS_TABLE_NAME,
     ProjectionExpression:
-      "id, connectionId, x, y, direction, isMoving, whenMovingHasChanged, i",
+      'id, connectionId, x, y, direction, isMoving, whenMovingHasChanged, i',
     FilterExpression:
-      "id <> :id AND x BETWEEN :x1 AND :x2 AND y BETWEEN :y1 AND :y2 AND NOT id IN (:ids)",
+      'id <> :id AND x BETWEEN :x1 AND :x2 AND y BETWEEN :y1 AND :y2 AND NOT id IN (:ids)',
     ExpressionAttributeValues: {
-      ":id": connection.id,
-      ":x1": connection.x - HALF_WIDTH,
-      ":x2": connection.x + HALF_WIDTH,
-      ":y1": connection.y - HALF_HEIGHT,
-      ":y2": connection.y + HALF_HEIGHT,
-      ":ids": objectsThatHaveBeenSentToTheClient,
+      ':id': connection.id,
+      ':x1': connection.x - HALF_WIDTH,
+      ':x2': connection.x + HALF_WIDTH,
+      ':y1': connection.y - HALF_HEIGHT,
+      ':y2': connection.y + HALF_HEIGHT,
+      ':ids': objectsThatHaveBeenSentToTheClient,
     },
   }
 }

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "Error.proto";
+import "Character.proto";
+import "Move.proto";
+import "MoveFromServer.proto";
+import "SynchronizedState.proto";
+import "Disconnect.proto";
+
+message Message {
+  oneof body {
+    Error error = 1;
+    Character character = 2;
+    Move move = 3;
+    MoveFromServer moveFromServer = 4;
+    SynchronizedState synchronizedState = 5;
+    Disconnect disconnect = 6;
+  }
+}

@@ -1,12 +1,12 @@
-import { GetCommand, GetCommandOutput } from "@aws-sdk/lib-dynamodb"
-import type { Connection } from "../../shared/database.js"
-import { createDynamoDBDocumentClient } from "./createDynamoDBDocumentClient.js"
+import { GetCommand, GetCommandOutput } from '@aws-sdk/lib-dynamodb'
+import type { Connection } from '@sanjo/mmog-shared/database.js'
+import { createDynamoDBDocumentClient } from './createDynamoDBDocumentClient.js'
 
 export async function retrieveConnection<T extends (keyof Connection)[]>(
   connectionId: string,
-  attributes: T,
+  attributes: T
 ): Promise<
-  Omit<GetCommandOutput, "Item"> & {
+  Omit<GetCommandOutput, 'Item'> & {
     Item?: Pick<Connection, T[number]>
   }
 > {
@@ -17,9 +17,9 @@ export async function retrieveConnection<T extends (keyof Connection)[]>(
       Key: {
         connectionId,
       },
-      ProjectionExpression: attributes.join(", "),
-    }),
-  )) as Omit<GetCommandOutput, "Item"> & {
+      ProjectionExpression: attributes.join(', '),
+    })
+  )) as Omit<GetCommandOutput, 'Item'> & {
     Item?: Pick<Connection, T[number]>
   }
 }

@@ -1,0 +1,1 @@
+{"version":3,"file":"convertPositionToUnsignedIntegers.js","sourceRoot":"","sources":["convertPositionToUnsignedIntegers.ts"],"names":[],"mappings":"AAEA,MAAM,UAAU,iCAAiC,CAC/C,SAAoB;IAEpB,OAAO;QACL,GAAG,SAAS;QACZ,CAAC,EAAE,IAAI,CAAC,KAAK,CAAC,SAAS,CAAC,CAAC,CAAC;QAC1B,CAAC,EAAE,IAAI,CAAC,KAAK,CAAC,SAAS,CAAC,CAAC,CAAC;KAC3B,CAAA;AACH,CAAC"}

@@ -1,14 +1,14 @@
-import { ApiGatewayManagementApiClient } from "@aws-sdk/client-apigatewaymanagementapi"
-import { PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb"
-import type { APIGatewayProxyResultV2 } from "aws-lambda/trigger/api-gateway-proxy.js"
-import { randomUUID } from "node:crypto"
-import type { Connection, Object } from "../../shared/database.js"
-import { Direction } from "../../shared/Direction.js"
-import { ObjectType } from "../../shared/ObjectType.js"
-import type { APIGatewayProxyWebsocketEventV2WithAuthorizedUser } from "../APIGatewayProxyWebsocketEventV2WithAuthorizedUser.js"
-import { createDynamoDBDocumentClient } from "../database/createDynamoDBDocumentClient.js"
-import { retrieveObjectByUserID } from "../database/retrieveObjectByUserID.js"
-import { sendMovementToClients } from "../websocket/sendMovementToClients.js"
+import { ApiGatewayManagementApiClient } from '@aws-sdk/client-apigatewaymanagementapi'
+import { PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb'
+import type { Connection, Object } from '@sanjo/mmog-shared/database.js'
+import { Direction } from '@sanjo/mmog-shared/Direction.js'
+import { ObjectType } from '@sanjo/mmog-shared/ObjectType.js'
+import type { APIGatewayProxyResultV2 } from 'aws-lambda/trigger/api-gateway-proxy.js'
+import { randomUUID } from 'node:crypto'
+import type { APIGatewayProxyWebsocketEventV2WithAuthorizedUser } from '../APIGatewayProxyWebsocketEventV2WithAuthorizedUser.js'
+import { createDynamoDBDocumentClient } from '../database/createDynamoDBDocumentClient.js'
+import { retrieveObjectByUserID } from '../database/retrieveObjectByUserID.js'
+import { sendMovementToClients } from '../websocket/sendMovementToClients.js'
 
 Error.stackTraceLimit = Infinity
 
@@ -26,10 +26,10 @@ const { CONNECTIONS_TABLE_NAME, OBJECTS_TABLE_NAME } = process.env
 const database = createDynamoDBDocumentClient()
 
 export async function handler(
-  event: APIGatewayProxyWebsocketEventV2WithAuthorizedUser,
+  event: APIGatewayProxyWebsocketEventV2WithAuthorizedUser
 ): Promise<APIGatewayProxyResultV2> {
   const apiGwManagementApi = new ApiGatewayManagementApiClient({
-    apiVersion: "2018-11-29",
+    apiVersion: '2018-11-29',
     endpoint: `https://${event.requestContext.domainName}/${event.requestContext.stage}`,
   })
 
@@ -42,12 +42,12 @@ export async function handler(
     i: 0,
   }
   let objectPart = await retrieveObjectByUserID(userID, [
-    "id",
-    "x",
-    "y",
-    "isMoving",
-    "direction",
-    "whenMovingHasChanged",
+    'id',
+    'x',
+    'y',
+    'isMoving',
+    'direction',
+    'whenMovingHasChanged',
   ])
   const promises: Promise<any>[] = []
   let object: Object
@@ -65,12 +65,12 @@ export async function handler(
           Key: {
             id: objectPart.id,
           },
-          UpdateExpression: "SET connectionId = :connectionId",
+          UpdateExpression: 'SET connectionId = :connectionId',
           ExpressionAttributeValues: {
-            ":connectionId": connectionId,
+            ':connectionId': connectionId,
           },
-        }),
-      ),
+        })
+      )
     )
   } else {
     object = {
@@ -89,8 +89,8 @@ export async function handler(
         new PutCommand({
           TableName: OBJECTS_TABLE_NAME,
           Item: object,
-        }),
-      ),
+        })
+      )
     )
   }
 
@@ -100,7 +100,7 @@ export async function handler(
       new PutCommand({
         TableName: CONNECTIONS_TABLE_NAME,
         Item: connection,
-      }),
+      })
     ),
   ])
 

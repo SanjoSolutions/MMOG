@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+import "Character.proto";
+
+message SynchronizedState {
+  repeated Character characters = 1;
+}

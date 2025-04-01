@@ -1,20 +1,20 @@
 import {
   type ApiGatewayManagementApiClient,
   PostToConnectionCommand,
-} from "@aws-sdk/client-apigatewaymanagementapi"
-import { MessageType } from "../../shared/communication/communication.js"
+} from '@aws-sdk/client-apigatewaymanagementapi'
+import { MessageType } from '@sanjo/mmog-shared/communication/communication.js'
 import {
   compressMoveFromServerData,
   MoveFromServerData,
-} from "../../shared/communication/messagesFromServer.js"
-import type { ID } from "../../shared/ID.js"
-import { postToConnection } from "./postToConnection.js"
+} from '@sanjo/mmog-shared/communication/messagesFromServer.js'
+import type { ID } from '@sanjo/mmog-shared/ID.js'
+import { postToConnection } from './postToConnection.js'
 
 export async function sendMovementToClient(
   apiGwManagementApi: ApiGatewayManagementApiClient,
   object: MoveFromServerData,
   connectionId: string,
-  userID: ID,
+  userID: ID
 ): Promise<void> {
   let data
   if (userID === object.userID) {
@@ -30,6 +30,6 @@ export async function sendMovementToClient(
         type: MessageType.Move,
         data: compressMoveFromServerData(data),
       }),
-    }),
+    })
   )
 }

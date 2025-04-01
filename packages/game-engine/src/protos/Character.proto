@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message Character {
+  string GUID = 1;
+  int32 x = 2;
+  int32 y = 3;
+  bool isPlayed = 4;
+  uint32 movingDirection = 5;
+  uint32 facingDirection = 6;
+  bool isMoving = 7;
+}
