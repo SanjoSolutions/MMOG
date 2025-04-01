@@ -1,6 +1,3 @@
-import { MessageType } from "@/shared/communication/communication.js";
-import type { Plant } from "@/shared/database.js";
-import { ObjectType } from "@/shared/ObjectType.js";
 import {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
@@ -10,6 +7,9 @@ import type { ScheduledEvent } from "aws-lambda/trigger/cloudwatch-events.js";
 import { createDynamoDBDocumentClient } from "../database/createDynamoDBDocumentClient.js";
 import { createScanCommandInputForCloseByConnections } from "../database/createScanCommandInputForCloseByConnections.js";
 import { scanThroughAll } from "../database/scanThroughAll.js";
+import { MessageType } from "../shared/communication/communication.js";
+import type { Plant } from "../shared/database.js";
+import { ObjectType } from "../shared/ObjectType.js";
 import { postToConnection } from "../websocket/postToConnection.js";
 
 Error.stackTraceLimit = Infinity;

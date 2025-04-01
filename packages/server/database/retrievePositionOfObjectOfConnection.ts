@@ -1,5 +1,5 @@
-import type { Object } from "@/shared/database.js";
 import { QueryCommand, QueryCommandOutput } from "@aws-sdk/lib-dynamodb";
+import type { Object } from "../shared/database.js";
 import { createDynamoDBDocumentClient } from "./createDynamoDBDocumentClient.js";
 
 type Item = Pick<Object, "x" | "y">;

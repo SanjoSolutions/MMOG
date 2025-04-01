@@ -1,4 +1,3 @@
-import { MessageType } from "@/shared/communication/communication.js";
 import {
   type ApiGatewayManagementApiClient,
   PostToConnectionCommand,
@@ -6,6 +5,7 @@ import {
 import { createScanCommandInputForCloseByConnections } from "../database/createScanCommandInputForCloseByConnections.js";
 import { retrievePositionOfObjectOfConnection } from "../database/retrievePositionOfObjectOfConnection.js";
 import { scanThroughAll } from "../database/scanThroughAll.js";
+import { MessageType } from "../shared/communication/communication.js";
 import { postToConnection } from "./postToConnection.js";
 
 export async function notifyClientsThatAClientHasDisconnected(

@@ -181,6 +181,9 @@ importers:
 
   packages/server:
     dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.49.4
+        version: 2.49.4
       ws:
         specifier: ^8.18.1
         version: 8.18.1

@@ -1,11 +1,11 @@
-import type { Plant } from "@/shared/database.js";
-import { Direction } from "@/shared/Direction.js";
-import { ObjectType } from "@/shared/ObjectType.js";
-import { PlantType } from "@/shared/PlantType.js";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyResultV2 } from "aws-lambda/trigger/api-gateway-proxy.js";
 import { randomUUID } from "node:crypto";
 import { createDynamoDBDocumentClient } from "../database/createDynamoDBDocumentClient.js";
+import type { Plant } from "../shared/database.js";
+import { Direction } from "../shared/Direction.js";
+import { ObjectType } from "../shared/ObjectType.js";
+import { PlantType } from "../shared/PlantType.js";
 
 Error.stackTraceLimit = Infinity;
 

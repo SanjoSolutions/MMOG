@@ -86,11 +86,6 @@
     "newLine": "lf",
     "verbatimModuleSyntax": true
   },
-  "include": ["./packages/**/*"],
-  "exclude": [
-    "node_modules",
-    "./packages/client/public/build/**/*",
-    "**/babel.config.js",
-    "./X/text_file_compression/examples/*"
-  ]
+  "include": ["packages/**/*"],
+  "exclude": ["node_modules", "**/babel.config.js"]
 }

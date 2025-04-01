@@ -1,6 +1,6 @@
-import type { Object } from "@/shared/database.js";
-import type { ID } from "@/shared/ID.js";
 import { QueryCommand, QueryCommandOutput } from "@aws-sdk/lib-dynamodb";
+import type { Object } from "../shared/database.js";
+import type { ID } from "../shared/ID.js";
 import { createDynamoDBDocumentClient } from "./createDynamoDBDocumentClient.js";
 
 export async function retrieveObjectByUserID<T extends (keyof Object)[]>(

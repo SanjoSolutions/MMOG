@@ -1,5 +1,5 @@
-import type { Connection } from "@/shared/database.js";
 import { GetCommand, GetCommandOutput } from "@aws-sdk/lib-dynamodb";
+import type { Connection } from "../shared/database.js";
 import { createDynamoDBDocumentClient } from "./createDynamoDBDocumentClient.js";
 
 export async function retrieveConnection<T extends (keyof Connection)[]>(

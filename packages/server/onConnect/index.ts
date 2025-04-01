@@ -1,6 +1,3 @@
-import type { Connection, Object } from "@/shared/database.js";
-import { Direction } from "@/shared/Direction.js";
-import { ObjectType } from "@/shared/ObjectType.js";
 import { ApiGatewayManagementApiClient } from "@aws-sdk/client-apigatewaymanagementapi";
 import { PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyResultV2 } from "aws-lambda/trigger/api-gateway-proxy.js";
@@ -8,6 +5,9 @@ import { randomUUID } from "node:crypto";
 import type { APIGatewayProxyWebsocketEventV2WithAuthorizedUser } from "../APIGatewayProxyWebsocketEventV2WithAuthorizedUser.js";
 import { createDynamoDBDocumentClient } from "../database/createDynamoDBDocumentClient.js";
 import { retrieveObjectByUserID } from "../database/retrieveObjectByUserID.js";
+import type { Connection, Object } from "../shared/database.js";
+import { Direction } from "../shared/Direction.js";
+import { ObjectType } from "../shared/ObjectType.js";
 import { sendMovementToClients } from "../websocket/sendMovementToClients.js";
 
 Error.stackTraceLimit = Infinity;

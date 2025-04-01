@@ -4,6 +4,7 @@
     "dev": "tsx index.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
     "ws": "^8.18.1"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
-import { Direction } from "@/shared/Direction.js";
 import { hasFlag } from "./hasFlag.js";
 import type { Movable } from "./Movable.js";
+import { Direction } from "./shared/Direction.js";
 import { SPEED } from "./speed.js";
 
 export function updatePosition(object: Movable, timeElapsed: number): void {

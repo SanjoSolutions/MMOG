@@ -16,7 +16,6 @@ import { PlantType } from "@/shared/PlantType.js"
 import { createClient, retrieveUser } from "@/utils/supabase/client.js"
 import "@aws-amplify/ui-react/styles.css"
 import { Application as PixiApplication } from "@pixi/react"
-import { Hub } from "aws-amplify"
 import { debounce } from "lodash-es"
 import {
   AnimatedSprite,
@@ -87,18 +86,8 @@ async function f(app: Application): Promise<void> {
 
   let socket: WebSocket | null = null
 
-  try {
+  if (user) {
     await initializeConnection()
-  } catch (error) {
-    if (error === "No current user") {
-      Hub.listen("auth", async (data) => {
-        if (data.payload.event === "signIn") {
-          await initializeConnection()
-        }
-      })
-    } else {
-      throw error
-    }
   }
 
   const plantTextures = new Map([
@@ -154,6 +143,7 @@ async function f(app: Application): Promise<void> {
   const objects = new Map<string, Object>()
   const objectsContainer = new Container()
   const character = new CharacterWithOneSpritesheet("/npc_woman.png", app.stage)
+  await character.loadSpriteSheet()
   objectsContainer.addChild(character.sprite)
   app.stage.addChild(objectsContainer)
   updateViewport()
@@ -405,58 +395,63 @@ async function f(app: Application): Promise<void> {
   // }
 
   async function initializeConnection(): Promise<void> {
-    socket = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_API_URL!)
-    socket.onmessage = function (event) {
-      const body = JSON.parse(event.data)
-      const { type, data } = body
-      if (type === MessageType.Move) {
-        const moveData = decompressMoveFromServerData(data)
-        let object
-        if (moveData.isCharacterOfClient) {
-          object = character
-        } else {
-          object = retrieveOrCreateObject({
-            id: moveData.id,
-            type: ObjectType.Character,
-          })
-        }
-        if (object.lastI === null || moveData.i > object.lastI) {
-          object.update(moveData)
-          object.lastI = moveData.i
-        }
-      } else if (type === MessageType.Objects) {
-        const { objects } = data
-        for (const objectData of objects) {
+    const jwt = (await supabase.auth.getSession()).data?.session?.access_token
+    if (jwt) {
+      socket = new WebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_API_URL!}?jwt=${jwt}`,
+      )
+      socket.onmessage = function (event) {
+        const body = JSON.parse(event.data)
+        const { type, data } = body
+        if (type === MessageType.Move) {
+          const moveData = decompressMoveFromServerData(data)
           let object
-          if (objectData.isCharacterOfClient) {
+          if (moveData.isCharacterOfClient) {
             object = character
           } else {
             object = retrieveOrCreateObject({
-              id: objectData.id,
-              type: objectData.type,
+              id: moveData.id,
+              type: ObjectType.Character,
             })
           }
-          object.update(objectData)
+          if (object.lastI === null || moveData.i > object.lastI) {
+            object.update(moveData)
+            object.lastI = moveData.i
+          }
+        } else if (type === MessageType.Objects) {
+          const { objects } = data
+          for (const objectData of objects) {
+            let object
+            if (objectData.isCharacterOfClient) {
+              object = character
+            } else {
+              object = retrieveOrCreateObject({
+                id: objectData.id,
+                type: objectData.type,
+              })
+            }
+            object.update(objectData)
+          }
+        } else if (type === MessageType.OtherClientDisconnected) {
+          const { connectionId } = data
+          const object = objects.get(connectionId)
+          if (object) {
+            objectsContainer.removeChild(object.sprite)
+            objects.delete(connectionId)
+          }
+        } else if (type === MessageType.PlantHasGrown) {
+          const { id, stage } = data
+          const object = retrieveOrCreateObject({
+            id,
+            type: ObjectType.Plant,
+          }) as Plant
+          object.stage = stage
         }
-      } else if (type === MessageType.OtherClientDisconnected) {
-        const { connectionId } = data
-        const object = objects.get(connectionId)
-        if (object) {
-          objectsContainer.removeChild(object.sprite)
-          objects.delete(connectionId)
-        }
-      } else if (type === MessageType.PlantHasGrown) {
-        const { id, stage } = data
-        const object = retrieveOrCreateObject({
-          id,
-          type: ObjectType.Plant,
-        }) as Plant
-        object.stage = stage
       }
-    }
 
-    socket.onopen = function () {
-      requestObjects()
+      socket.onopen = function () {
+        requestObjects()
+      }
     }
   }
 
