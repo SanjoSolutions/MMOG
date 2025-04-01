@@ -5,6 +5,12 @@
 Some assets (graphics) are licensed under a different license than the license in the file "LICENSE".
 See `public/credits.html`.
 
+## Installation
+
+```sh
+pnpm install
+```
+
 ## How to deploy
 
 Requires:
