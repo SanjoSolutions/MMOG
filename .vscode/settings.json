@@ -21,5 +21,6 @@
   ],
   "javascript.preferences.importModuleSpecifierEnding": "js",
   "typescript.preferences.importModuleSpecifierEnding": "js",
-  "cSpell.words": ["supabase"]
+  "cSpell.words": ["supabase"],
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }

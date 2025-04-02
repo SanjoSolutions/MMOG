@@ -1,14 +1,28 @@
 import { createClient } from "@supabase/supabase-js"
+import { randomUUID } from "crypto"
 import { createServer, IncomingMessage } from "http"
 import { WebSocket, WebSocketServer } from "ws"
+import {
+  deserializeMessage,
+  serializeMessage,
+} from "../client/src/shared/message.js"
+import type { Move } from "../client/src/shared/proto/Move.js"
+import type { Test } from "../client/src/shared/proto/Test.js"
+import type { Test2 } from "../client/src/shared/proto/Test2.js"
+import type { TimeSync } from "../client/src/shared/proto/TimeSync.js"
+import { retrieveCharacter, setCharacter } from "./database/characters.js"
 import { scanThroughAll } from "./database/scanThroughAll.js"
 import { HALF_HEIGHT, HALF_WIDTH } from "./maximumSupportedResolution.js"
-import { handler as move } from "./move/index.js"
 import type { Connection } from "./shared/database.js"
 import type { ID } from "./shared/ID.js"
+import { now } from "./shared/now.js"
+import { MessageType } from "./shared/proto/Message.js"
 import { sendMovementToClient } from "./websocket/sendMovementToClient.js"
 
-const supabase = createClient()
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!,
+)
 
 const httpServer = createServer()
 const server = Object.assign(new WebSocketServer({ noServer: true }), {
@@ -26,7 +40,7 @@ const server = Object.assign(new WebSocketServer({ noServer: true }), {
     })
   },
 
-  sendToAllOthers(data: string, socket: WebSocket) {
+  sendToAllOthers(data: Uint8Array<ArrayBufferLike>, socket: WebSocket) {
     this.doForAllOthers((client) => {
       client.send(data)
     }, socket)
@@ -64,7 +78,7 @@ httpServer.on("upgrade", async (request, socket, head) => {
 
 async function authenticate(request: IncomingMessage) {
   if (request.url) {
-    const url = new URL(request.url)
+    const url = new URL(request.url, "http://localhost")
     const jwt = url.searchParams.get("jwt")
     if (jwt) {
       const { error, data } = await supabase.auth.getUser(jwt)
@@ -82,16 +96,95 @@ export interface WebSocketWithUserId extends WebSocket {
 server.on("connection", function connection(socket: WebSocketWithUserId) {
   socket.on("error", console.error)
 
-  socket.on("message", function message(rawData) {
-    const { type, data } = JSON.parse(rawData)
-    console.log("received: %s", rawData, type, data)
-    if (type === "move") {
-      move({ server, socket, data })
+  const character = {
+    id: randomUUID(),
+  }
+
+  setCharacter(socket.userId, character)
+
+  socket.send(
+    serializeMessage({
+      type: MessageType.Spawn,
+      data: {
+        ...character,
+        canMove: true,
+      },
+    }),
+  )
+
+  server.sendToAllOthers(
+    serializeMessage({
+      type: MessageType.Spawn,
+      data: {
+        ...character,
+        canMove: false,
+      },
+    }),
+    socket,
+  )
+
+  socket.on("message", function message(rawData, isBinary) {
+    if (isBinary) {
+      const { type, data } = deserializeMessage(rawData as Buffer)
+      switch (type) {
+        case MessageType.Test:
+          handleTest(socket, data)
+          break
+        case MessageType.Test2:
+          handleTest2(socket, data)
+          break
+        case MessageType.TimeSync:
+          handleTimeSync(socket, data)
+          break
+        case MessageType.Move:
+          handleMove(socket, data)
+          break
+      }
     }
   })
-
-  socket.send("something")
 })
+
+function handleTest(socket: WebSocketWithUserId, message: Test) {}
+
+function handleTest2(socket: WebSocketWithUserId, message: Test2) {}
+
+function handleTimeSync(socket: WebSocketWithUserId, message: TimeSync) {
+  socket.send(
+    serializeMessage({
+      type: MessageType.TimeSync,
+      data: {
+        id: message.id,
+        time: now(),
+      },
+    }),
+  )
+}
+
+function handleMove(socket: WebSocketWithUserId, message: Move) {
+  console.log("move", message)
+  const character = retrieveCharacter(socket.userId)
+  if (character) {
+    character.x = message.x
+    character.y = message.y
+    character.direction = message.direction
+    character.isMoving = message.isMoving
+    character.whenMovingHasChanged = message.whenMovingHasChanged
+  }
+  server.sendToAllOthers(
+    serializeMessage({
+      type: MessageType.Move,
+      data: {
+        id: socket.userId,
+        x: message.x,
+        y: message.y,
+        direction: message.direction,
+        isMoving: message.isMoving,
+        whenMovingHasChanged: message.whenMovingHasChanged,
+      },
+    }),
+    socket,
+  )
+}
 
 // Environment variables required:
 // * API_GATEWAY_URL
@@ -100,6 +193,10 @@ const TICK_RATE = 30 // ticks per second
 const MAXIMUM_NUMBER_OF_ITEMS_THAT_CAN_BE_IN_IN_EXPRESSION = 100
 
 async function main() {
+  const port = process.env.PORT || 8080
+  httpServer.listen(port, () => {
+    console.log(`Server is listening on port ${port}.`)
+  })
   // while (true) {
   //   let lastRun = Date.now();
   //   await scanThroughAll(

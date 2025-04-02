@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message TimeSync {
+  uint32 id = 1;
+  double time = 2;
+}

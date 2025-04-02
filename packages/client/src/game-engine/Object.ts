@@ -1,4 +1,5 @@
 import { Container, Sprite } from "pixi.js"
+import { now } from "../../../shared/now.js"
 import { Direction } from "./Direction.js"
 import { updatePosition } from "./updatePosition.js"
 
@@ -80,7 +81,7 @@ export abstract class Object {
         isMoving: this.isMoving,
         direction: this.facingDirection,
       }
-      updatePosition(movable, Date.now() - this.whenMovingHasChanged)
+      updatePosition(movable, now() - this.whenMovingHasChanged)
       this.x = movable.x
       this.y = movable.y
     }

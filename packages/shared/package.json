@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@protobuf-ts/runtime": "^2.9.6"
+  }
+}

@@ -1,6 +1,4 @@
-import { createScanCommandInputForOtherCloseByConnections } from "../database/createScanCommandInputForOtherCloseByConnections.js"
-import { scanThroughAll } from "../database/scanThroughAll.js"
-import type { Server } from '../index.js'
+import type { Server } from "../index.js"
 import type { MoveFromServerData } from "../shared/communication/messagesFromServer.js"
 import type { ID } from "../shared/ID.js"
 import { sendMovementToClient } from "./sendMovementToClient.js"
@@ -12,9 +10,6 @@ export async function sendMovementToOtherClients(
   userID: ID,
 ): Promise<void> {
   server.doForAllOthers((client) => {
-    sendMovementToClient(
-      client,
-      object,
-      userID,
-    )}
+    sendMovementToClient(client, object, userID)
+  })
 }

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+enum MessageType {
+  MESSAGE_TYPE_None = 0;
+  MESSAGE_TYPE_Test = 1;
+  MESSAGE_TYPE_Test2 = 2;
+  MESSAGE_TYPE_TimeSync = 3;
+  MESSAGE_TYPE_Move = 4;
+  MESSAGE_TYPE_Spawn = 5;
+}
+
+message Message {
+  MessageType type = 1;
+  bytes data = 2;
+}

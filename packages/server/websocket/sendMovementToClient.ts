@@ -1,7 +1,7 @@
 import { MessageType } from "../shared/communication/communication.js"
 import {
   compressMoveFromServerData,
-  MoveFromServerData,
+  type MoveFromServerData,
 } from "../shared/communication/messagesFromServer.js"
 import type { ID } from "../shared/ID.js"
 

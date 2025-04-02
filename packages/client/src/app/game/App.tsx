@@ -3,16 +3,7 @@
 import { Character } from "@/game-engine/Character.js"
 import { createAnimatedSprite } from "@/game-engine/createAnimatedSprite.js"
 import { CharacterWithOneSpritesheet } from "@/game-engine/index.js"
-import { Object } from "@/game-engine/Object.js"
-import {
-  compressMoveDataWithI,
-  MessageType,
-  MoveData,
-} from "@/shared/communication/communication.js"
-import { decompressMoveFromServerData } from "@/shared/communication/messagesFromServer.js"
-import { Direction } from "@/shared/Direction.js"
-import { ObjectType } from "@/shared/ObjectType.js"
-import { PlantType } from "@/shared/PlantType.js"
+import { Object as GameObject } from "@/game-engine/Object.js"
 import { createClient, retrieveUser } from "@/utils/supabase/client.js"
 import "@aws-amplify/ui-react/styles.css"
 import { Application as PixiApplication } from "@pixi/react"
@@ -24,6 +15,20 @@ import {
   Spritesheet,
   type Application,
 } from "pixi.js"
+import { create as createTimeSync, type TimeSync } from "timesync"
+import { MoveData } from "../../../../shared/communication/communication.js"
+import { Direction } from "../../../../shared/Direction.js"
+import {
+  deserializeMessage,
+  serializeMessage,
+} from "../../../../shared/message.js"
+import { now } from "../../../../shared/now.js"
+import { ObjectType } from "../../../../shared/ObjectType.js"
+import { PlantType } from "../../../../shared/PlantType.js"
+import { MessageType as MessageType2 } from "../../../../shared/proto/Message.js"
+import { Move } from "../../../../shared/proto/Move.js"
+
+let timeSync: TimeSync
 
 export function App() {
   return (
@@ -100,7 +105,7 @@ async function f(app: Application): Promise<void> {
     [PlantType.Corn, plantsSpritesheet.animations.corn_plant],
   ])
   3
-  class Plant extends Object {
+  class Plant extends GameObject {
     plantType: PlantType = PlantType.Tomato
     private _stage: number = 0
 
@@ -140,7 +145,7 @@ async function f(app: Application): Promise<void> {
     }
   }
 
-  const objects = new Map<string, Object>()
+  const objects = new Map<string, GameObject>()
   const objectsContainer = new Container()
   const character = new CharacterWithOneSpritesheet("/npc_woman.png", app.stage)
   await character.loadSpriteSheet()
@@ -210,19 +215,16 @@ async function f(app: Application): Promise<void> {
     },
   )
 
-  const sendMoveToServer = function sendMoveToServer(data: MoveData) {
+  const sendMoveToServer = function sendMoveToServer(data: Move) {
     const OPEN = 1
     if (socket && socket.readyState === OPEN) {
       lastSentMovement = {
         ...data,
       }
       socket.send(
-        JSON.stringify({
-          type: MessageType.Move,
-          data: compressMoveDataWithI({
-            ...data,
-            i,
-          }),
+        serializeMessage({
+          type: MessageType2.Move,
+          data,
         }),
       )
       i++
@@ -334,7 +336,7 @@ async function f(app: Application): Promise<void> {
       down,
       pointerState,
     })
-    const direction = isMoving
+    const facingDirection = isMoving
       ? convertKeysDownToDirection({
           left,
           right,
@@ -342,29 +344,49 @@ async function f(app: Application): Promise<void> {
           down,
           pointerState,
         })
-      : character.direction
+      : character.facingDirection
+
+    const hasChanged =
+      isMoving !== character.isMoving ||
+      facingDirection !== character.facingDirection
+
+    const previousX = character.x
+    const previousY = character.y
+
+    const whenMovingHasChanged = timeSync.now()
+
+    if (hasChanged) {
+      character.updatePosition()
+      character.baseX = character.x
+      character.baseY = character.y
+      character.whenMovingHasChanged = whenMovingHasChanged
+      character.isMoving = isMoving
+      character.facingDirection = facingDirection
+    }
 
     if (character.isMoving) {
-      const previousX = character.x
-      const previousY = character.y
       character.updatePosition()
-      if (character.y !== previousY) {
-        character.updateRenderPosition()
-      }
-      if (character.x !== previousX || character.y !== previousY) {
-        updateViewport()
-      }
+    }
+
+    if (character.y !== previousY) {
+      character.updateRenderPosition()
+    }
+    if (character.x !== previousX || character.y !== previousY) {
+      updateViewport()
     }
 
     if (
       !lastSentMovement ||
       isMoving !== lastSentMovement.isMoving ||
       ((left || right || up || down) &&
-        direction !== lastSentMovement.direction)
+        facingDirection !== lastSentMovement.direction)
     ) {
       sendMoveToServer({
         isMoving: isMoving,
-        direction: direction,
+        x: character.x,
+        y: character.y,
+        direction: facingDirection,
+        whenMovingHasChanged,
       })
     }
 
@@ -400,57 +422,95 @@ async function f(app: Application): Promise<void> {
       socket = new WebSocket(
         `${process.env.NEXT_PUBLIC_WEBSOCKET_API_URL!}?jwt=${jwt}`,
       )
-      socket.onmessage = function (event) {
-        const body = JSON.parse(event.data)
-        const { type, data } = body
-        if (type === MessageType.Move) {
-          const moveData = decompressMoveFromServerData(data)
-          let object
-          if (moveData.isCharacterOfClient) {
-            object = character
-          } else {
-            object = retrieveOrCreateObject({
-              id: moveData.id,
-              type: ObjectType.Character,
-            })
-          }
-          if (object.lastI === null || moveData.i > object.lastI) {
-            object.update(moveData)
-            object.lastI = moveData.i
-          }
-        } else if (type === MessageType.Objects) {
-          const { objects } = data
-          for (const objectData of objects) {
-            let object
-            if (objectData.isCharacterOfClient) {
-              object = character
-            } else {
-              object = retrieveOrCreateObject({
-                id: objectData.id,
-                type: objectData.type,
-              })
-            }
-            object.update(objectData)
-          }
-        } else if (type === MessageType.OtherClientDisconnected) {
-          const { connectionId } = data
-          const object = objects.get(connectionId)
-          if (object) {
-            objectsContainer.removeChild(object.sprite)
-            objects.delete(connectionId)
-          }
-        } else if (type === MessageType.PlantHasGrown) {
-          const { id, stage } = data
-          const object = retrieveOrCreateObject({
-            id,
-            type: ObjectType.Plant,
-          }) as Plant
-          object.stage = stage
-        }
-      }
 
-      socket.onopen = function () {
-        requestObjects()
+      socket.onopen = () => {
+        timeSync = Object.assign(
+          createTimeSync({
+            server: socket,
+            now,
+          }),
+          {
+            async send(to: WebSocket, data, timeout) {
+              console.log("send", to, data, timeout)
+              const data2 = serializeMessage({
+                type: MessageType2.TimeSync,
+                data: {
+                  id: data.id,
+                  time: data.result || 0,
+                },
+              })
+              to.send(data2)
+            },
+          },
+        )
+
+        window.aOffset = function () {
+          return timeSync.offset
+        }
+
+        socket!.onmessage = async function (event) {
+          const { type, data } = deserializeMessage(
+            new Uint8Array(await event.data.arrayBuffer()),
+          )
+          switch (type) {
+            case MessageType2.TimeSync:
+              const { id, time } = data
+              timeSync.receive({
+                id,
+                result: time,
+              })
+              break
+          }
+
+          // const body = JSON.parse(event.data)
+          // const { type, data } = body
+          // if (type === MessageType.Move) {
+          //   const moveData = decompressMoveFromServerData(data)
+          //   let object
+          //   if (moveData.isCharacterOfClient) {
+          //     object = character
+          //   } else {
+          //     object = retrieveOrCreateObject({
+          //       id: moveData.id,
+          //       type: ObjectType.Character,
+          //     })
+          //   }
+          //   if (object.lastI === null || moveData.i > object.lastI) {
+          //     object.update(moveData)
+          //     object.lastI = moveData.i
+          //   }
+          // } else if (type === MessageType.Objects) {
+          //   const { objects } = data
+          //   for (const objectData of objects) {
+          //     let object
+          //     if (objectData.isCharacterOfClient) {
+          //       object = character
+          //     } else {
+          //       object = retrieveOrCreateObject({
+          //         id: objectData.id,
+          //         type: objectData.type,
+          //       })
+          //     }
+          //     object.update(objectData)
+          //   }
+          // } else if (type === MessageType.OtherClientDisconnected) {
+          //   const { connectionId } = data
+          //   const object = objects.get(connectionId)
+          //   if (object) {
+          //     objectsContainer.removeChild(object.sprite)
+          //     objects.delete(connectionId)
+          //   }
+          // } else if (type === MessageType.PlantHasGrown) {
+          //   const { id, stage } = data
+          //   const object = retrieveOrCreateObject({
+          //     id,
+          //     type: ObjectType.Plant,
+          //   }) as Plant
+          //   object.stage = stage
+          // }
+        }
+
+        // requestObjects()
       }
     }
   }
@@ -461,7 +521,7 @@ async function f(app: Application): Promise<void> {
   }: {
     id: string
     type: ObjectType
-  }): Object {
+  }): GameObject {
     let object = objects.get(id)
     if (!object) {
       if (type === ObjectType.Character) {
@@ -478,13 +538,13 @@ async function f(app: Application): Promise<void> {
   }
 
   function requestObjects(): void {
-    if (socket) {
-      socket.send(
-        JSON.stringify({
-          type: MessageType.RequestObjects,
-        }),
-      )
-    }
+    // if (socket) {
+    //   socket.send(
+    //     JSON.stringify({
+    //       type: MessageType.RequestObjects,
+    //     }),
+    //   )
+    // }
   }
 
   window.addEventListener(
