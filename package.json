@@ -4,24 +4,18 @@
   "type": "module",
   "description": "MMOG",
   "scripts": {
-    "build": "yarn build:proto && esbuild packages/aws/move/index.ts packages/aws/initializeWorld/index.ts packages/aws/move/index.ts packages/aws/onConnect/index.ts packages/aws/onDisconnect/index.ts packages/aws/requestObjects/index.ts packages/aws/growPlants/index.ts packages/aws/authorizer/index.ts --bundle --platform=node --target=node18 --outdir=build/ --sourcemap --external:@aws-sdk/client-apigatewaymanagementapi,@aws-sdk/client-dynamodb,@aws-sdk/lib-dynamodb",
-    "build:proto": "protoc --ts_out=packages/shared/proto --proto_path packages/shared/proto packages/shared/proto/*.proto",
-    "build:test": "esbuild packages/shared/test.ts --bundle --platform=node --target=node18 --outfile=build/test.cjs --sourcemap",
-    "build:test2": "esbuild packages/shared/test2.ts --bundle --platform=node --target=node18 --outfile=build/test2.cjs --sourcemap",
-    "build:test3": "esbuild packages/shared/test3.ts --bundle --platform=node --target=node18 --outfile=build/test3.cjs --sourcemap",
-    "build:packages": "cd packages && tsc --build",
-    "build:server": "yarn build:proto && esbuild packages/aws/server/index.ts --bundle --platform=node --target=node20 --outdir=packages/aws/server/build/server/ --sourcemap",
-    "deploy": "yarn build && sam deploy",
-    "deploy:server": "scp -i \"~/.ssh/MMOG.pem\" packages/aws/server/build/server/* ubuntu@ec2-18-196-153-126.eu-central-1.compute.amazonaws.com:/home/ubuntu/server",
-    "deploy:server-run-script": "scp -i \"~/.ssh/MMOG.pem\" packages/aws/server/run.sh ubuntu@ec2-18-196-153-126.eu-central-1.compute.amazonaws.com:/home/ubuntu/server"
+    "dev": "npm-run-all --print-label --parallel dev:*",
+    "dev:server": "cd packages/server && pnpm run dev",
+    "dev:client": "cd packages/client && pnpm run dev",
+    "dev:proto": "nodemon --exec \"pnpm run build:proto\" --watch packages/shared/proto --ext proto",
+    "build": "pnpm run build:proto",
+    "build:proto": "protoc --ts_out=packages/shared/proto --proto_path packages/shared/proto packages/shared/proto/*.proto"
   },
-  "keywords": [],
   "homepage": "https://github.com/SanjoSolutions/projects/tree/main/mmog",
   "license": "Unlicense",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SanjoSolutions/projects.git",
-    "directory": "mmog"
+    "url": "https://github.com/SanjoSolutions/mmog.git"
   },
   "publishConfig": {
     "access": "public"
@@ -40,6 +34,8 @@
     "@types/aws-lambda": "^8.10.119",
     "@types/google-protobuf": "^3.15.6",
     "@types/jest": "^29.5.14",
+    "nodemon": "^3.1.9",
+    "npm-run-all": "^4.1.5",
     "prettier": "^3.0.2",
     "supabase": "^2.20.5",
     "typescript": "^5.2.2"

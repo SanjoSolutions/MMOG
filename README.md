@@ -7,29 +7,20 @@ See `public/credits.html`.
 
 ## Installation
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org)
+- [pnpm](https://pnpm.io/installation#using-corepack)
+- Optional: [Visual Studio Code](https://code.visualstudio.com/)
+
+### Installing dependencies
+
 ```sh
 pnpm install
 ```
 
-## How to deploy
-
-Requires:
-
-- AWS CLI
-- SAM CLI
+## How to run
 
 ```sh
-sam build
-sam deploy --guided
-```
-
-### EC2
-
-There is also a server component which runs on EC2.
-
-## How to run the client
-
-```sh
-cd packages/client
-pnpm run development
+pnpm run dev
 ```
