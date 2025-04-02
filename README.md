@@ -11,6 +11,7 @@ See `public/credits.html`.
 
 - [Node.js](https://nodejs.org)
 - [pnpm](https://pnpm.io/installation#using-corepack)
+- [Docker](https://www.docker.com)
 - Optional: [Visual Studio Code](https://code.visualstudio.com/)
 
 ### Installing dependencies
