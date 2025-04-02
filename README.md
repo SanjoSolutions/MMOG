@@ -21,6 +21,10 @@ pnpm install
 
 ## How to run
 
+In Visual Studio Code: F5 (Run > Start Debugging)
+
+Or in a terminal:
+
 ```sh
 pnpm run dev
 ```
