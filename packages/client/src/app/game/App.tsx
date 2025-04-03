@@ -544,10 +544,14 @@ export function App() {
               console.log("handleMove", data)
               const character = retrieveCharacterByGUID(data.character.id)
               if (character) {
+                const previousY = character.y
                 Object.assign(character, data.character)
                 character.baseX = character.x
                 character.baseY = character.y
                 character.whenMovingHasChanged = data.whenMovingHasChanged
+                if (character.y !== previousY) {
+                  character.updateRenderPosition()
+                }
               }
             }
 
