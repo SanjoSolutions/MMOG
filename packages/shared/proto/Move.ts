@@ -10,28 +10,17 @@ import { UnknownFieldHandler } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { Character } from "./Character";
 /**
  * @generated from protobuf message Move
  */
 export interface Move {
     /**
-     * @generated from protobuf field: bool isMoving = 1;
+     * @generated from protobuf field: Character character = 1;
      */
-    isMoving: boolean;
+    character?: Character;
     /**
-     * @generated from protobuf field: uint32 direction = 2;
-     */
-    direction: number;
-    /**
-     * @generated from protobuf field: double x = 3;
-     */
-    x: number;
-    /**
-     * @generated from protobuf field: double y = 4;
-     */
-    y: number;
-    /**
-     * @generated from protobuf field: double whenMovingHasChanged = 5;
+     * @generated from protobuf field: double whenMovingHasChanged = 2;
      */
     whenMovingHasChanged: number;
 }
@@ -39,19 +28,12 @@ export interface Move {
 class Move$Type extends MessageType<Move> {
     constructor() {
         super("Move", [
-            { no: 1, name: "isMoving", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
-            { no: 2, name: "direction", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 3, name: "x", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
-            { no: 4, name: "y", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
-            { no: 5, name: "whenMovingHasChanged", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
+            { no: 1, name: "character", kind: "message", T: () => Character },
+            { no: 2, name: "whenMovingHasChanged", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
         ]);
     }
     create(value?: PartialMessage<Move>): Move {
         const message = globalThis.Object.create((this.messagePrototype!));
-        message.isMoving = false;
-        message.direction = 0;
-        message.x = 0;
-        message.y = 0;
         message.whenMovingHasChanged = 0;
         if (value !== undefined)
             reflectionMergePartial<Move>(this, message, value);
@@ -62,19 +44,10 @@ class Move$Type extends MessageType<Move> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* bool isMoving */ 1:
-                    message.isMoving = reader.bool();
+                case /* Character character */ 1:
+                    message.character = Character.internalBinaryRead(reader, reader.uint32(), options, message.character);
                     break;
-                case /* uint32 direction */ 2:
-                    message.direction = reader.uint32();
-                    break;
-                case /* double x */ 3:
-                    message.x = reader.double();
-                    break;
-                case /* double y */ 4:
-                    message.y = reader.double();
-                    break;
-                case /* double whenMovingHasChanged */ 5:
+                case /* double whenMovingHasChanged */ 2:
                     message.whenMovingHasChanged = reader.double();
                     break;
                 default:
@@ -89,21 +62,12 @@ class Move$Type extends MessageType<Move> {
         return message;
     }
     internalBinaryWrite(message: Move, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* bool isMoving = 1; */
-        if (message.isMoving !== false)
-            writer.tag(1, WireType.Varint).bool(message.isMoving);
-        /* uint32 direction = 2; */
-        if (message.direction !== 0)
-            writer.tag(2, WireType.Varint).uint32(message.direction);
-        /* double x = 3; */
-        if (message.x !== 0)
-            writer.tag(3, WireType.Bit64).double(message.x);
-        /* double y = 4; */
-        if (message.y !== 0)
-            writer.tag(4, WireType.Bit64).double(message.y);
-        /* double whenMovingHasChanged = 5; */
+        /* Character character = 1; */
+        if (message.character)
+            Character.internalBinaryWrite(message.character, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* double whenMovingHasChanged = 2; */
         if (message.whenMovingHasChanged !== 0)
-            writer.tag(5, WireType.Bit64).double(message.whenMovingHasChanged);
+            writer.tag(2, WireType.Bit64).double(message.whenMovingHasChanged);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

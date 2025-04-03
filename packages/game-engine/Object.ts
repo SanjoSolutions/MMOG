@@ -1,9 +1,11 @@
 import { Container, Sprite } from "pixi.js"
-import { now } from "../../../shared/now.js"
+import { now } from "../shared/now.js"
 import { Direction } from "./Direction.js"
+import type { GUID } from "./GUID.js"
 import { updatePosition } from "./updatePosition.js"
 
 export abstract class Object {
+  id?: GUID
   lastI: number | null = null
   _facingDirection: Direction = Direction.Down
   movingDirection: Direction = Direction.None

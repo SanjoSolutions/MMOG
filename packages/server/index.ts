@@ -2,7 +2,13 @@ import { createClient } from "@supabase/supabase-js"
 import { randomUUID } from "crypto"
 import { createServer, IncomingMessage } from "http"
 import { WebSocket, WebSocketServer } from "ws"
+import {
+  guidToCharacter,
+  retrieveCharacterByUserId,
+  setCharacter,
+} from "../shared/characters.js"
 import type { Connection } from "../shared/database.js"
+import { Direction } from "../shared/Direction.js"
 import type { ID } from "../shared/ID.js"
 import { deserializeMessage, serializeMessage } from "../shared/message.js"
 import { now } from "../shared/now.js"
@@ -11,7 +17,6 @@ import type { Move } from "../shared/proto/Move.js"
 import type { Test } from "../shared/proto/Test.js"
 import type { Test2 } from "../shared/proto/Test2.js"
 import type { TimeSync } from "../shared/proto/TimeSync.js"
-import { retrieveCharacter, setCharacter } from "./database/characters.js"
 import { scanThroughAll } from "./database/scanThroughAll.js"
 import { HALF_HEIGHT, HALF_WIDTH } from "./maximumSupportedResolution.js"
 import { sendMovementToClient } from "./websocket/sendMovementToClient.js"
@@ -94,26 +99,46 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
   socket.on("error", console.error)
 
   const character = {
+    userId: socket.userId,
     id: randomUUID(),
+    isMoving: false,
+    x: 0,
+    y: 0,
+    facingDirection: Direction.Down,
   }
 
-  setCharacter(socket.userId, character)
+  setCharacter(character)
 
   socket.send(
     serializeMessage({
       type: MessageType.Spawn,
       data: {
-        ...character,
+        character,
         canMove: true,
       },
     }),
   )
 
+  const playerCharacter = character
+  for (const character of guidToCharacter.values()) {
+    if (character.id !== playerCharacter.id) {
+      socket.send(
+        serializeMessage({
+          type: MessageType.Spawn,
+          data: {
+            character,
+            canMove: false,
+          },
+        }),
+      )
+    }
+  }
+
   server.sendToAllOthers(
     serializeMessage({
       type: MessageType.Spawn,
       data: {
-        ...character,
+        character,
         canMove: false,
       },
     }),
@@ -158,29 +183,22 @@ function handleTimeSync(socket: WebSocketWithUserId, message: TimeSync) {
 }
 
 function handleMove(socket: WebSocketWithUserId, message: Move) {
-  console.log("move", message)
-  const character = retrieveCharacter(socket.userId)
-  if (character) {
-    character.x = message.x
-    character.y = message.y
-    character.direction = message.direction
-    character.isMoving = message.isMoving
+  const character = retrieveCharacterByUserId(socket.userId)
+  if (character && character.id === message.character.id) {
+    Object.assign(character, message.character)
     character.whenMovingHasChanged = message.whenMovingHasChanged
+
+    server.sendToAllOthers(
+      serializeMessage({
+        type: MessageType.Move,
+        data: {
+          character,
+          whenMovingHasChanged: message.whenMovingHasChanged,
+        },
+      }),
+      socket,
+    )
   }
-  server.sendToAllOthers(
-    serializeMessage({
-      type: MessageType.Move,
-      data: {
-        id: socket.userId,
-        x: message.x,
-        y: message.y,
-        direction: message.direction,
-        isMoving: message.isMoving,
-        whenMovingHasChanged: message.whenMovingHasChanged,
-      },
-    }),
-    socket,
-  )
 }
 
 // Environment variables required:

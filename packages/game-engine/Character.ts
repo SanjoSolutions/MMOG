@@ -1,12 +1,10 @@
 import type { AnimatedSprite, Container, Resource, Texture } from "pixi.js"
-import { Object } from "./Object.js"
 import { Direction } from "./Direction.js"
 import { hasFlag } from "./hasFlag.js"
+import { Object } from "./Object.js"
 import type { UniversalSpritesheet } from "./UniversalSpritesheet.js"
-import type { GUID } from "./GUID.js"
 
 export abstract class Character extends Object {
-  GUID?: GUID
   isPlayed?: boolean
   public destinationX: number | null = null
   public destinationY: number | null = null

@@ -1,8 +1,8 @@
 import { ApiGatewayManagementApiClient } from "@aws-sdk/client-apigatewaymanagementapi"
 import type { APIGatewayProxyResultV2 } from "aws-lambda/trigger/api-gateway-proxy.js"
 import type { WebSocket } from "ws"
+import { retrieveCharacterByUserId } from "../../shared/characters.js"
 import { updatePosition } from "../../updatePosition.js"
-import { retrieveCharacter } from "../database/characters.js"
 import { createDynamoDBDocumentClient } from "../database/createDynamoDBDocumentClient.js"
 import type { Server } from "../index.js"
 import { decompressMoveDataWithI } from "../shared/communication/communication.js"
@@ -42,7 +42,7 @@ export async function handler({
     endpoint: `https://${event.requestContext.domainName}/${event.requestContext.stage}`,
   })
 
-  const character = retrieveCharacter(userID)
+  const character = retrieveCharacterByUserId(userID)
 
   if (character) {
     updatePosition(

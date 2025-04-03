@@ -75,9 +75,6 @@ importers:
       '@pixi/sound':
         specifier: ^6.0.1
         version: 6.0.1(pixi.js@8.9.1)
-      '@pixi/tilemap':
-        specifier: link:../../../AppData/Local/pnpm/global/5/node_modules/@pixi/tilemap
-        version: link:../../../AppData/Local/pnpm/global/5/node_modules/@pixi/tilemap
       '@protobuf-ts/runtime':
         specifier: ^2.9.4
         version: 2.9.6
@@ -141,9 +138,6 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
-      rxjs:
-        specifier: ^7.8.1
-        version: 7.8.2
       timesync:
         specifier: ^1.0.11
         version: 1.0.11
@@ -193,6 +187,18 @@ importers:
       typescript:
         specifier: 5.7.2
         version: 5.7.2
+
+  packages/game-engine:
+    dependencies:
+      '@pixi/tilemap':
+        specifier: link:../../../AppData/Local/pnpm/global/5/node_modules/@pixi/tilemap
+        version: link:../../../AppData/Local/pnpm/global/5/node_modules/@pixi/tilemap
+      pixi.js:
+        specifier: ^8.9.1
+        version: 8.9.1
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
 
   packages/server:
     dependencies:

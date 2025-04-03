@@ -4,7 +4,7 @@ import { MoveDataWithI as MoveDataWithIProto } from "../proto/MoveDataWithI.js"
 
 export interface MoveData {
   isMoving: boolean
-  direction: Direction
+  facingDirection: Direction
 }
 
 export type MoveDataWithI = MoveData & { i: number }

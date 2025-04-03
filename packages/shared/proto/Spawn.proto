@@ -1,6 +1,8 @@
 syntax = "proto3";
 
+import "Character.proto";
+
 message Spawn {
-  string id = 1;
-  bool canMove = 2;
+  Character character = 1;
+  optional bool canMove = 2;
 }

@@ -1,9 +1,8 @@
 syntax = "proto3";
 
+import "Character.proto";
+
 message Move {
-  bool isMoving = 1;
-  uint32 direction = 2;
-  double x = 3;
-  double y = 4;
-  double whenMovingHasChanged = 5;
+  Character character = 1;
+  double whenMovingHasChanged = 2;
 }

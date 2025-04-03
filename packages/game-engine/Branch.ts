@@ -5,10 +5,10 @@ import {
   type SpriteSource,
 } from "pixi.js"
 import type { Game } from "./Game.js"
+import type { IGameServerAPI } from "./IGameServerAPI.js"
 import { Interactable } from "./Interactable.js"
 import { isPlayerCharacter } from "./isPlayerCharacter.js"
 import type { Object } from "./Object.js"
-import type { IGameServerAPI } from "./IGameServerAPI.js"
 
 export class Branch extends Interactable {
   #game: Game<IGameServerAPI> | null = null

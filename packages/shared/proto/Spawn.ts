@@ -10,31 +10,30 @@ import { UnknownFieldHandler } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { Character } from "./Character";
 /**
  * @generated from protobuf message Spawn
  */
 export interface Spawn {
     /**
-     * @generated from protobuf field: string id = 1;
+     * @generated from protobuf field: Character character = 1;
      */
-    id: string;
+    character?: Character;
     /**
-     * @generated from protobuf field: bool canMove = 2;
+     * @generated from protobuf field: optional bool canMove = 2;
      */
-    canMove: boolean;
+    canMove?: boolean;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Spawn$Type extends MessageType<Spawn> {
     constructor() {
         super("Spawn", [
-            { no: 1, name: "id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 2, name: "canMove", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
+            { no: 1, name: "character", kind: "message", T: () => Character },
+            { no: 2, name: "canMove", kind: "scalar", opt: true, T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<Spawn>): Spawn {
         const message = globalThis.Object.create((this.messagePrototype!));
-        message.id = "";
-        message.canMove = false;
         if (value !== undefined)
             reflectionMergePartial<Spawn>(this, message, value);
         return message;
@@ -44,10 +43,10 @@ class Spawn$Type extends MessageType<Spawn> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* string id */ 1:
-                    message.id = reader.string();
+                case /* Character character */ 1:
+                    message.character = Character.internalBinaryRead(reader, reader.uint32(), options, message.character);
                     break;
-                case /* bool canMove */ 2:
+                case /* optional bool canMove */ 2:
                     message.canMove = reader.bool();
                     break;
                 default:
@@ -62,11 +61,11 @@ class Spawn$Type extends MessageType<Spawn> {
         return message;
     }
     internalBinaryWrite(message: Spawn, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* string id = 1; */
-        if (message.id !== "")
-            writer.tag(1, WireType.LengthDelimited).string(message.id);
-        /* bool canMove = 2; */
-        if (message.canMove !== false)
+        /* Character character = 1; */
+        if (message.character)
+            Character.internalBinaryWrite(message.character, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* optional bool canMove = 2; */
+        if (message.canMove !== undefined)
             writer.tag(2, WireType.Varint).bool(message.canMove);
         let u = options.writeUnknownFields;
         if (u !== false)

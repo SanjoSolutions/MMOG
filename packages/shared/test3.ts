@@ -5,7 +5,7 @@ import {
 
 const compressedData = compressMoveDataWithI({
   isMoving: true,
-  direction: 0b100,
+  facingDirection: 0b100,
   x: 5,
   y: 3,
   i: 7,
