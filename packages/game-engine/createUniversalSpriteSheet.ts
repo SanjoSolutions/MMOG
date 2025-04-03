@@ -12,6 +12,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_up_1`]: {
       frame: {
@@ -19,6 +23,10 @@ export async function createUniversalSpriteSheet(
         y: 8 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_up_2`]: {
@@ -28,6 +36,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_up_3`]: {
       frame: {
@@ -35,6 +47,10 @@ export async function createUniversalSpriteSheet(
         y: 8 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_up_4`]: {
@@ -44,6 +60,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_up_5`]: {
       frame: {
@@ -51,6 +71,10 @@ export async function createUniversalSpriteSheet(
         y: 8 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_up_6`]: {
@@ -60,6 +84,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_up_7`]: {
       frame: {
@@ -68,6 +96,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_up_8`]: {
       frame: {
@@ -75,6 +107,10 @@ export async function createUniversalSpriteSheet(
         y: 8 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
 
@@ -85,6 +121,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_left_1`]: {
       frame: {
@@ -92,6 +132,10 @@ export async function createUniversalSpriteSheet(
         y: 9 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_left_2`]: {
@@ -101,6 +145,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_left_3`]: {
       frame: {
@@ -108,6 +156,10 @@ export async function createUniversalSpriteSheet(
         y: 9 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_left_4`]: {
@@ -117,6 +169,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_left_5`]: {
       frame: {
@@ -124,6 +180,10 @@ export async function createUniversalSpriteSheet(
         y: 9 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_left_6`]: {
@@ -133,6 +193,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_left_7`]: {
       frame: {
@@ -141,6 +205,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_left_8`]: {
       frame: {
@@ -148,6 +216,10 @@ export async function createUniversalSpriteSheet(
         y: 9 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
 
@@ -158,6 +230,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_down_1`]: {
       frame: {
@@ -165,6 +241,10 @@ export async function createUniversalSpriteSheet(
         y: 10 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_down_2`]: {
@@ -174,6 +254,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_down_3`]: {
       frame: {
@@ -181,6 +265,10 @@ export async function createUniversalSpriteSheet(
         y: 10 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_down_4`]: {
@@ -190,6 +278,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_down_5`]: {
       frame: {
@@ -197,6 +289,10 @@ export async function createUniversalSpriteSheet(
         y: 10 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_down_6`]: {
@@ -206,6 +302,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_down_7`]: {
       frame: {
@@ -214,6 +314,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_down_8`]: {
       frame: {
@@ -221,6 +325,10 @@ export async function createUniversalSpriteSheet(
         y: 10 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
 
@@ -231,6 +339,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_right_1`]: {
       frame: {
@@ -238,6 +350,10 @@ export async function createUniversalSpriteSheet(
         y: 11 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_right_2`]: {
@@ -247,6 +363,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_right_3`]: {
       frame: {
@@ -254,6 +374,10 @@ export async function createUniversalSpriteSheet(
         y: 11 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_right_4`]: {
@@ -263,6 +387,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_right_5`]: {
       frame: {
@@ -270,6 +398,10 @@ export async function createUniversalSpriteSheet(
         y: 11 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
     [`${prefix}_walk_right_6`]: {
@@ -279,6 +411,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_right_7`]: {
       frame: {
@@ -287,6 +423,10 @@ export async function createUniversalSpriteSheet(
         w: 64,
         h: 64,
       },
+      anchor: {
+        x: 0.5,
+        y: 1,
+      },
     },
     [`${prefix}_walk_right_8`]: {
       frame: {
@@ -294,6 +434,10 @@ export async function createUniversalSpriteSheet(
         y: 11 * 64,
         w: 64,
         h: 64,
+      },
+      anchor: {
+        x: 0.5,
+        y: 1,
       },
     },
   }

@@ -5,6 +5,5 @@ export function createAnimatedSprite(
 ): AnimatedSprite {
   const animatedSprite = new AnimatedSprite(textures)
   animatedSprite.animationSpeed = 0.115
-  animatedSprite.anchor.set(0.5, 1)
   return animatedSprite
 }
