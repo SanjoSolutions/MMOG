@@ -210,11 +210,14 @@ export function App() {
         },
       )
 
-      const sendMoveToServer = function sendMoveToServer(data: Move) {
+      const sendMoveToServer = async function sendMoveToServer(data: Move) {
         const OPEN = 1
         if (socket && socket.readyState === OPEN) {
           lastSentMovement = {
             ...data.character,
+          }
+          if (window.SIMULATE_HIGH_LATENCY) {
+            await wait(500)
           }
           socket.send(
             serializeMessage({
@@ -453,6 +456,9 @@ export function App() {
             }
 
             socket!.onmessage = async function (event) {
+              if (window.SIMULATE_HIGH_LATENCY) {
+                await wait(500)
+              }
               const { type, data } = deserializeMessage(
                 new Uint8Array(await event.data.arrayBuffer()),
               )
@@ -541,7 +547,6 @@ export function App() {
             }
 
             function handleMove(data: Move) {
-              console.log("handleMove", data)
               const character = retrieveCharacterByGUID(data.character.id)
               if (character) {
                 const previousY = character.y
@@ -640,4 +645,8 @@ export function App() {
       </div>
     </>
   )
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

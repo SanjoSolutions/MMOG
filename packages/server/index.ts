@@ -203,9 +203,16 @@ function handleTimeSync(socket: WebSocketWithUserId, message: TimeSync) {
   )
 }
 
+const MAXIMUM_ALLOWED_TIME_DELTA = 1000 // ms
+
 function handleMove(socket: WebSocketWithUserId, message: Move) {
+  console.log("move", message)
   const character = retrieveCharacterByUserId(socket.userId)
-  if (character && character.id === message.character.id) {
+  if (
+    character &&
+    character.id === message.character.id &&
+    Math.abs(now() - message.whenMovingHasChanged) < MAXIMUM_ALLOWED_TIME_DELTA
+  ) {
     Object.assign(character, message.character)
     character.whenMovingHasChanged = message.whenMovingHasChanged
 
