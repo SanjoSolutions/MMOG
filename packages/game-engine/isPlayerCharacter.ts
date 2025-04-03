@@ -1,6 +1,6 @@
-import type { Object } from "./Object.js"
 import { Character } from "./Character.js"
+import type { GameObject } from "./GameObject.js"
 
-export function isPlayerCharacter(entity: Object): boolean {
+export function isPlayerCharacter(entity: GameObject): boolean {
   return entity instanceof Character
 }

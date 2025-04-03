@@ -10,6 +10,7 @@ declare module "timesync" {
 
     send(to: string, data: object, timeout: number): Promise<void>
     receive(from: string, data: object)
+    receive(data: object)
   }
 
   type TimeSyncCreateOptions = {
@@ -18,7 +19,7 @@ declare module "timesync" {
     delay?: number
     repeat?: number
     peers?: string | string[]
-    server?: string
+    server?: WebSocket
     now?: () => number
   }
 

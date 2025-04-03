@@ -1,8 +1,8 @@
 import { Sprite } from "pixi.js"
-import type { Object } from "./Object.js"
+import type { GameObject } from "./GameObject.js"
 
 export class Interactable extends Sprite {
-  canInteractWith(entity: Object): boolean {
+  canInteractWith(entity: GameObject): boolean {
     return true
   }
 

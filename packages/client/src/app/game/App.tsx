@@ -12,34 +12,21 @@ import {
   type Application,
 } from "pixi.js"
 import { useCallback, useEffect, useMemo } from "react"
-import { create as createTimeSync, type TimeSync } from "timesync"
 import { Character } from "../../../../game-engine/Character.js"
+import { CharacterSpriteWithOneSpriteSheet } from "../../../../game-engine/CharacterSpriteWithOneSpriteSheet.js"
+import type { GUID } from "../../../../game-engine/GUID.js"
+import { GameObject } from "../../../../game-engine/GameObject.js"
 import { createAnimatedSprite } from "../../../../game-engine/createAnimatedSprite.js"
-import { CharacterWithOneSpritesheet } from "../../../../game-engine/index.js"
-import { Object as GameObject } from "../../../../game-engine/Object.js"
-import {
-  guidToCharacter,
-  removeCharacterByGUID,
-  retrieveCharacterByGUID,
-  setCharacter,
-} from "../../../../shared/characters.js"
 import { Direction } from "../../../../shared/Direction.js"
-import {
-  deserializeMessage,
-  serializeMessage,
-} from "../../../../shared/message.js"
-import { now } from "../../../../shared/now.js"
 import { ObjectType } from "../../../../shared/ObjectType.js"
 import { PlantType } from "../../../../shared/PlantType.js"
-import type { Character as CharacterProto } from "../../../../shared/proto/Character.js"
 import type { Despawn } from "../../../../shared/proto/Despawn.js"
-import { MessageType as MessageType2 } from "../../../../shared/proto/Message.js"
 import { Move } from "../../../../shared/proto/Move.js"
 import type { Spawn } from "../../../../shared/proto/Spawn.js"
+import { GameClient } from "./GameClient.js"
 
-let timeSync: TimeSync = {
-  now,
-}
+const gameClient = new GameClient()
+const guidToSprite = new Map<GUID, CharacterSpriteWithOneSpriteSheet>()
 
 export function App() {
   const keyStates = useMemo(
@@ -93,8 +80,6 @@ export function App() {
 
       app.queueResize()
 
-      let i = 1
-
       const { sound } = await import("@pixi/sound")
       sound.add("music", "/assets/music/TownTheme.mp3")
       sound.play("music", { loop: true })
@@ -105,8 +90,6 @@ export function App() {
       }: {
         plants: Spritesheet
       } = (await Assets.load(["plants"])) as any
-
-      let socket: WebSocket | null = null
 
       if (user) {
         await initializeConnection()
@@ -164,7 +147,7 @@ export function App() {
 
       const objects = new Map<string, GameObject>()
       const objectsContainer = new Container()
-      let character: CharacterWithOneSpritesheet | null = null
+      let characterSprite: CharacterSpriteWithOneSpriteSheet | null = null
       app.stage.addChild(objectsContainer)
 
       interface PointerState {
@@ -209,25 +192,6 @@ export function App() {
           }
         },
       )
-
-      const sendMoveToServer = async function sendMoveToServer(data: Move) {
-        const OPEN = 1
-        if (socket && socket.readyState === OPEN) {
-          lastSentMovement = {
-            ...data.character,
-          }
-          if (window.SIMULATE_HIGH_LATENCY) {
-            await wait(500)
-          }
-          socket.send(
-            serializeMessage({
-              type: MessageType2.Move,
-              data,
-            }),
-          )
-          i++
-        }
-      }
 
       interface KeysDown {
         left: boolean
@@ -311,15 +275,15 @@ export function App() {
         )
       }
 
-      let lastSentMovement: CharacterProto | null = null
-
       const clearArea = {
         width: 64,
         height: 64,
       }
 
       app.ticker.add(() => {
-        if (character) {
+        if (characterSprite) {
+          const character = characterSprite.object as Character
+
           const left = keyStates.get("KeyA")!
           const right = keyStates.get("KeyD")!
           const up = keyStates.get("KeyW")!
@@ -349,7 +313,7 @@ export function App() {
           const previousX = character.x
           const previousY = character.y
 
-          const whenMovingHasChanged = timeSync.now()
+          const whenMovingHasChanged = gameClient.now()
 
           if (hasChanged) {
             character.updatePosition()
@@ -364,20 +328,22 @@ export function App() {
             character.updatePosition()
           }
 
+          characterSprite.sync()
+
           if (character.y !== previousY) {
-            character.updateRenderPosition()
+            characterSprite.updateRenderPosition()
           }
           if (character.x !== previousX || character.y !== previousY) {
             updateViewport()
           }
 
           if (
-            !lastSentMovement ||
-            isMoving !== lastSentMovement.isMoving ||
+            !gameClient._lastSentMovement ||
+            isMoving !== gameClient._lastSentMovement.isMoving ||
             ((left || right || up || down) &&
-              facingDirection !== lastSentMovement.facingDirection)
+              facingDirection !== gameClient._lastSentMovement.facingDirection)
           ) {
-            sendMoveToServer({
+            gameClient.move({
               character: {
                 id: character.id,
                 isMoving,
@@ -394,21 +360,28 @@ export function App() {
           }
         }
 
-        const playerCharacter = character
-        for (const character of guidToCharacter.values()) {
+        const playerCharacter = characterSprite?.object
+        for (const character of gameClient.characters.guidToCharacter.values()) {
           if (!playerCharacter || character.id !== playerCharacter.id) {
             character.updatePosition()
+            const characterSprite = guidToSprite.get(character.id)
+            if (characterSprite) {
+              characterSprite.sync()
+            }
           }
         }
       })
 
       function updateViewport() {
-        app.stage.x = -(character.x - 0.5 * app.screen.width)
-        app.stage.y = -(
-          character.y -
-          0.5 * characterHeight -
-          0.5 * app.screen.height
-        )
+        const character = characterSprite?.object as Character
+        if (character) {
+          app.stage.x = -(character.x - 0.5 * app.screen.width)
+          app.stage.y = -(
+            character.y -
+            0.5 * characterHeight -
+            0.5 * app.screen.height
+          )
+        }
       }
 
       // const tileMap = new CompositeTilemap()
@@ -427,149 +400,52 @@ export function App() {
         const jwt = (await supabase.auth.getSession()).data?.session
           ?.access_token
         if (jwt) {
-          socket = new WebSocket(
-            `${process.env.NEXT_PUBLIC_WEBSOCKET_API_URL!}?jwt=${jwt}`,
-          )
+          await gameClient.connect(jwt)
 
-          socket.onopen = () => {
-            timeSync = Object.assign(
-              createTimeSync({
-                server: socket,
-                now,
-              }),
-              {
-                async send(to: WebSocket, data, timeout) {
-                  const data2 = serializeMessage({
-                    type: MessageType2.TimeSync,
-                    data: {
-                      id: data.id,
-                      time: data.result || 0,
-                    },
-                  })
-                  to.send(data2)
-                },
-              },
-            )
+          window.aOffset = function () {
+            return gameClient._timeSync.offset
+          }
 
-            window.aOffset = function () {
-              return timeSync.offset
-            }
-
-            socket!.onmessage = async function (event) {
-              if (window.SIMULATE_HIGH_LATENCY) {
-                await wait(500)
-              }
-              const { type, data } = deserializeMessage(
-                new Uint8Array(await event.data.arrayBuffer()),
+          gameClient.onSpawn.subscribe(async (data: Spawn) => {
+            if (data.character) {
+              const character2 = gameClient.characters.retrieveCharacterByGUID(
+                data.character.id,
               )
-              switch (type) {
-                case MessageType2.TimeSync:
-                  const { id, time } = data
-                  timeSync.receive({
-                    id,
-                    result: time,
-                  })
-                  break
-                case MessageType2.Spawn:
-                  handleSpawn(data)
-                  break
-                case MessageType2.Move:
-                  handleMove(data)
-                  break
-                case MessageType2.Despawn:
-                  handleDespawn(data)
-                  break
-              }
-
-              // const body = JSON.parse(event.data)
-              // const { type, data } = body
-              // if (type === MessageType.Move) {
-              //   const moveData = decompressMoveFromServerData(data)
-              //   let object
-              //   if (moveData.isCharacterOfClient) {
-              //     object = character
-              //   } else {
-              //     object = retrieveOrCreateObject({
-              //       id: moveData.id,
-              //       type: ObjectType.Character,
-              //     })
-              //   }
-              //   if (object.lastI === null || moveData.i > object.lastI) {
-              //     object.update(moveData)
-              //     object.lastI = moveData.i
-              //   }
-              // } else if (type === MessageType.Objects) {
-              //   const { objects } = data
-              //   for (const objectData of objects) {
-              //     let object
-              //     if (objectData.isCharacterOfClient) {
-              //       object = character
-              //     } else {
-              //       object = retrieveOrCreateObject({
-              //         id: objectData.id,
-              //         type: objectData.type,
-              //       })
-              //     }
-              //     object.update(objectData)
-              //   }
-              // } else if (type === MessageType.OtherClientDisconnected) {
-              //   const { connectionId } = data
-              //   const object = objects.get(connectionId)
-              //   if (object) {
-              //     objectsContainer.removeChild(object.sprite)
-              //     objects.delete(connectionId)
-              //   }
-              // } else if (type === MessageType.PlantHasGrown) {
-              //   const { id, stage } = data
-              //   const object = retrieveOrCreateObject({
-              //     id,
-              //     type: ObjectType.Plant,
-              //   }) as Plant
-              //   object.stage = stage
-              // }
-            }
-
-            async function handleSpawn(data: Spawn) {
-              const character2 = new CharacterWithOneSpritesheet(
-                "/npc_woman.png",
-                app.stage,
-              )
-              await character2.loadSpriteSheet()
-              Object.assign(character2, data.character)
-              character2.baseX = character2.x
-              character2.baseY = character2.y
-              setCharacter(character2)
-              objectsContainer.addChild(character2.sprite)
-              if (data.canMove) {
-                character = character2
-                updateViewport()
-              }
-            }
-
-            function handleMove(data: Move) {
-              const character = retrieveCharacterByGUID(data.character.id)
-              if (character) {
-                const previousY = character.y
-                Object.assign(character, data.character)
-                character.baseX = character.x
-                character.baseY = character.y
-                character.whenMovingHasChanged = data.whenMovingHasChanged
-                if (character.y !== previousY) {
-                  character.updateRenderPosition()
+              if (character2) {
+                const characterSprite2 = new CharacterSpriteWithOneSpriteSheet(
+                  character2,
+                  app.stage,
+                  "/npc_woman.png",
+                )
+                await characterSprite2.loadSpriteSheet()
+                guidToSprite.set(character2.id, characterSprite2)
+                objectsContainer.addChild(characterSprite2.sprite)
+                if (data.canMove) {
+                  characterSprite = characterSprite2
+                  updateViewport()
                 }
               }
             }
+          })
 
-            function handleDespawn(data: Despawn) {
-              const character = retrieveCharacterByGUID(data.id)
-              if (character) {
-                objectsContainer.removeChild(character.sprite)
-                removeCharacterByGUID(data.id)
+          gameClient.onMove.subscribe(async (data: Move) => {
+            if (data.character) {
+              const character = gameClient.characters.retrieveCharacterByGUID(
+                data.character.id,
+              )
+              if (character.y !== data.character.y) {
+                character.updateRenderPosition()
               }
             }
+          })
 
-            // requestObjects()
-          }
+          gameClient.onDespawn.subscribe(async (data: Despawn) => {
+            const characterSprite = guidToSprite.get(data.id)
+            if (characterSprite) {
+              objectsContainer.removeChild(characterSprite.sprite)
+              guidToSprite.delete(data.id)
+            }
+          })
         }
       }
 
@@ -593,16 +469,6 @@ export function App() {
           objects.set(id, object)
         }
         return object
-      }
-
-      function requestObjects(): void {
-        // if (socket) {
-        //   socket.send(
-        //     JSON.stringify({
-        //       type: MessageType.RequestObjects,
-        //     }),
-        //   )
-        // }
       }
 
       window.addEventListener(
@@ -645,8 +511,4 @@ export function App() {
       </div>
     </>
   )
-}
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }

@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "pixi.js": "^8.9.1",
     "rxjs": "^7.8.1",

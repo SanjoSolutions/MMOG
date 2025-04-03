@@ -2,14 +2,9 @@ import { createClient } from "@supabase/supabase-js"
 import { randomUUID } from "crypto"
 import { createServer, IncomingMessage } from "http"
 import { WebSocket, WebSocketServer } from "ws"
-import {
-  guidToCharacter,
-  removeCharacter,
-  retrieveCharacterByUserId,
-  setCharacter,
-} from "../shared/characters.js"
+import { Character } from "../game-engine/Character.js"
+import { Characters } from "../shared/characters.js"
 import type { Connection } from "../shared/database.js"
-import { Direction } from "../shared/Direction.js"
 import type { ID } from "../shared/ID.js"
 import { deserializeMessage, serializeMessage } from "../shared/message.js"
 import { now } from "../shared/now.js"
@@ -21,6 +16,8 @@ import type { TimeSync } from "../shared/proto/TimeSync.js"
 import { scanThroughAll } from "./database/scanThroughAll.js"
 import { HALF_HEIGHT, HALF_WIDTH } from "./maximumSupportedResolution.js"
 import { sendMovementToClient } from "./websocket/sendMovementToClient.js"
+
+const characters = new Characters()
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -102,7 +99,7 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
   socket.on("error", console.error)
 
   socket.on("close", () => {
-    const character = retrieveCharacterByUserId(socket.userId)
+    const character = characters.retrieveCharacterByUserId(socket.userId)
     if (character) {
       if (hasSentCharacterToOtherClients) {
         server.sendToAllOthers(
@@ -114,20 +111,16 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
         )
       }
 
-      removeCharacter(character)
+      characters.removeCharacter(character)
     }
   })
 
-  const character = {
+  const character = Object.assign(new Character(), {
     userId: socket.userId,
     id: randomUUID(),
-    isMoving: false,
-    x: 0,
-    y: 0,
-    facingDirection: Direction.Down,
-  }
+  })
 
-  setCharacter(character)
+  characters.setCharacter(character)
 
   socket.send(
     serializeMessage({
@@ -140,7 +133,7 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
   )
 
   const playerCharacter = character
-  for (const character of guidToCharacter.values()) {
+  for (const character of characters.guidToCharacter.values()) {
     if (character.id !== playerCharacter.id) {
       socket.send(
         serializeMessage({
@@ -207,7 +200,7 @@ const MAXIMUM_ALLOWED_TIME_DELTA = 1000 // ms
 
 function handleMove(socket: WebSocketWithUserId, message: Move) {
   console.log("move", message)
-  const character = retrieveCharacterByUserId(socket.userId)
+  const character = characters.retrieveCharacterByUserId(socket.userId)
   if (
     character &&
     character.id === message.character.id &&

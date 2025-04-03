@@ -1,48 +1,48 @@
-import type { GUID } from "../client/src/game-engine/GUID.js"
+import type { Character } from "../game-engine/Character.js"
+import type { GUID } from "../game-engine/GUID.js"
 
 type UserId = string
-type Character = any
 
-export const userIdToCharacter = new Map<UserId, Character>()
-export const guidToCharacter = new Map<GUID, Character>()
+export class Characters {
+  userIdToCharacter = new Map<UserId, Character>()
+  guidToCharacter = new Map<GUID, Character>()
 
-export function retrieveCharacterByUserId(
-  userId: UserId,
-): Character | undefined {
-  return userIdToCharacter.get(userId)
-}
-
-export function retrieveCharacterByGUID(guid: GUID): Character | undefined {
-  return guidToCharacter.get(guid)
-}
-
-export function setCharacterWithUserId(userId: UserId, character: Character) {
-  userIdToCharacter.set(userId, character)
-}
-
-export function setCharacter(character: Character) {
-  if (character.userId) {
-    userIdToCharacter.set(character.userId, character)
+  retrieveCharacterByUserId(userId: UserId): Character | undefined {
+    return this.userIdToCharacter.get(userId)
   }
 
-  if (character.id) {
-    guidToCharacter.set(character.id, character)
-  }
-}
-
-export function removeCharacter(character: Character) {
-  if (character.userId) {
-    userIdToCharacter.delete(character.userId)
+  retrieveCharacterByGUID(guid: GUID): Character | undefined {
+    return this.guidToCharacter.get(guid)
   }
 
-  if (character.id) {
-    guidToCharacter.delete(character.id)
+  setCharacterWithUserId(userId: UserId, character: Character) {
+    this.userIdToCharacter.set(userId, character)
   }
-}
 
-export function removeCharacterByGUID(id: GUID) {
-  const character = guidToCharacter.get(id)
-  if (character) {
-    removeCharacter(character)
+  setCharacter(character: Character) {
+    if (character.userId) {
+      this.userIdToCharacter.set(character.userId, character)
+    }
+
+    if (character.id) {
+      this.guidToCharacter.set(character.id, character)
+    }
+  }
+
+  removeCharacter(character: Character) {
+    if (character.userId) {
+      this.userIdToCharacter.delete(character.userId)
+    }
+
+    if (character.id) {
+      this.guidToCharacter.delete(character.id)
+    }
+  }
+
+  removeCharacterByGUID(id: GUID) {
+    const character = this.guidToCharacter.get(id)
+    if (character) {
+      this.removeCharacter(character)
+    }
   }
 }

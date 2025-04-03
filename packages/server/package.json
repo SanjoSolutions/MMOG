@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec \"tsx --env-file .env\" --watch . --watch ../shared --ext ts,tsx,js,jsx,json index.ts"
+    "dev": "nodemon --exec \"tsx --env-file .env\" --watch . --watch ../shared --watch ../game-engine --ext ts,tsx,js,jsx,json index.ts"
   },
   "dependencies": {
     "@protobuf-ts/runtime": "^2.9.6",

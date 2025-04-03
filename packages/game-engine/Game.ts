@@ -2,34 +2,34 @@ import { CompositeTilemap, settings } from "@pixi/tilemap"
 import * as PIXI from "pixi.js"
 import { Application, Assets, Container, Sprite } from "pixi.js"
 import { Subject } from "rxjs"
-import { calculateDistance } from "./calculateDistance.js"
 import type { Character } from "./Character.js"
-import { CharacterWithOneSpriteSheet } from "./CharacterWithOneSpriteSheet.js"
-import { MessageType } from "./clientServerCommunication/MessageType.js"
-import { TILE_HEIGHT, TILE_WIDTH } from "./config.js"
+import { CharacterSpriteWithOneSpriteSheet } from "./CharacterSpriteWithOneSpriteSheet.js"
 import {
-  type AskForNumberOptions,
-  type AskForNumberReturnType,
   Dialog,
   Option,
+  type AskForNumberOptions,
+  type AskForNumberReturnType,
 } from "./Dialog.js"
 import { Direction } from "./Direction.js"
-import { findClosest } from "./findClosest.js"
 import type { GUID } from "./GUID.js"
 import type { IGameServerAPI } from "./IGameServerAPI.js"
 import {
-  type InteractableObject,
   isInteractableObject,
+  type InteractableObject,
 } from "./InteractableObject.js"
-import { isFlagSet } from "./isFlagSet.js"
 import type { Location } from "./Location.js"
-import type { Database } from "./persistence.js"
 import type { Point2D } from "./Point2D.js"
-import type { Character as CharacterProto } from "./protos/Character.js"
-import type { Message } from "./protos/Message.js"
 import { Side } from "./Side.js"
 import { TileMap } from "./TileMap/TileMap.js"
 import type { TilePosition } from "./TilePosition.js"
+import { calculateDistance } from "./calculateDistance.js"
+import { MessageType } from "./clientServerCommunication/MessageType.js"
+import { TILE_HEIGHT, TILE_WIDTH } from "./config.js"
+import { findClosest } from "./findClosest.js"
+import { isFlagSet } from "./isFlagSet.js"
+import type { Database } from "./persistence.js"
+import type { Character as CharacterProto } from "./protos/Character.js"
+import type { Message } from "./protos/Message.js"
 
 export const numberOfTilesPerRow = 64
 export const numberOfTilesPerColumn = 65
@@ -39,7 +39,7 @@ export const mapHeight = numberOfTilesPerColumn * TILE_HEIGHT
 export class Game<T extends IGameServerAPI, M> {
   server: T
   database: Database
-  man: CharacterWithOneSpriteSheet | undefined | null = null
+  man: CharacterSpriteWithOneSpriteSheet | undefined | null = null
   #objectInHand: Sprite | undefined | null = null
   app: Application
   #walkableInFrom: Side[]
@@ -49,7 +49,7 @@ export class Game<T extends IGameServerAPI, M> {
   #canCharacterMove: boolean = true
   money: number = 0
   isInteracting: boolean = false
-  characters: Map<GUID, CharacterWithOneSpriteSheet> = new Map()
+  characters: Map<GUID, CharacterSpriteWithOneSpriteSheet> = new Map()
   onMapLoaded = new Subject<string>()
   isTeleporting: boolean = false
 
@@ -101,7 +101,7 @@ export class Game<T extends IGameServerAPI, M> {
   }
 
   async createCharacter(characterData: CharacterProto) {
-    const character = new CharacterWithOneSpriteSheet(
+    const character = new CharacterSpriteWithOneSpriteSheet(
       "character.png",
       this.app.stage,
     )
