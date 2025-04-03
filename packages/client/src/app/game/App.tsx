@@ -285,13 +285,6 @@ export function App() {
         height: 64,
       }
 
-      const cow = new CharacterSpriteWithOneSpriteSheet(
-        {},
-        app.stage,
-        await loadSpriteSheet("/assets/sprites/cow/cow_walk.json"),
-      )
-      objectsContainer.addChild(cow.sprite)
-
       app.ticker.add(() => {
         if (characterSprite) {
           const character = characterSprite.object as Character
