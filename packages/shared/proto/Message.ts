@@ -50,7 +50,11 @@ export enum MessageType {
     /**
      * @generated from protobuf enum value: MESSAGE_TYPE_Spawn = 5;
      */
-    Spawn = 5
+    Spawn = 5,
+    /**
+     * @generated from protobuf enum value: MESSAGE_TYPE_Despawn = 6;
+     */
+    Despawn = 6
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Message$Type extends MessageType$<Message> {

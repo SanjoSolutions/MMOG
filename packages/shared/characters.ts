@@ -29,3 +29,20 @@ export function setCharacter(character: Character) {
     guidToCharacter.set(character.id, character)
   }
 }
+
+export function removeCharacter(character: Character) {
+  if (character.userId) {
+    userIdToCharacter.delete(character.userId)
+  }
+
+  if (character.id) {
+    guidToCharacter.delete(character.id)
+  }
+}
+
+export function removeCharacterByGUID(id: GUID) {
+  const character = guidToCharacter.get(id)
+  if (character) {
+    removeCharacter(character)
+  }
+}

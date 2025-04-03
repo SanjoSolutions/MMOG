@@ -1,3 +1,4 @@
+import { Despawn } from "./proto/Despawn.js"
 import { Message as MessageProto, MessageType } from "./proto/Message"
 import { Move } from "./proto/Move.js"
 import { Spawn } from "./proto/Spawn"
@@ -30,6 +31,11 @@ export interface SpawnMessage {
   data: Spawn
 }
 
+export interface DespawnMessage {
+  type: MessageType.Despawn
+  data: Despawn
+}
+
 export type ClientMessage =
   | TestMessage
   | Test2Message
@@ -40,6 +46,7 @@ export type ServerMessage =
   | Test2Message
   | TimeSyncMessage
   | SpawnMessage
+  | DespawnMessage
 export type Message = ClientMessage | ServerMessage
 
 const typeToClass = new Map<MessageType, any>([
@@ -48,6 +55,7 @@ const typeToClass = new Map<MessageType, any>([
   [MessageType.TimeSync, TimeSync],
   [MessageType.Move, Move],
   [MessageType.Spawn, Spawn],
+  [MessageType.Despawn, Despawn],
 ])
 
 export function serializeMessage(message: Message) {

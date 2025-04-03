@@ -4,6 +4,7 @@ import { createServer, IncomingMessage } from "http"
 import { WebSocket, WebSocketServer } from "ws"
 import {
   guidToCharacter,
+  removeCharacter,
   retrieveCharacterByUserId,
   setCharacter,
 } from "../shared/characters.js"
@@ -96,7 +97,26 @@ export interface WebSocketWithUserId extends WebSocket {
 }
 
 server.on("connection", function connection(socket: WebSocketWithUserId) {
+  let hasSentCharacterToOtherClients = false
+
   socket.on("error", console.error)
+
+  socket.on("close", () => {
+    const character = retrieveCharacterByUserId(socket.userId)
+    if (character) {
+      if (hasSentCharacterToOtherClients) {
+        server.sendToAllOthers(
+          serializeMessage({
+            type: MessageType.Despawn,
+            data: { id: character.id },
+          }),
+          socket,
+        )
+      }
+
+      removeCharacter(character)
+    }
+  })
 
   const character = {
     userId: socket.userId,
@@ -144,6 +164,7 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
     }),
     socket,
   )
+  hasSentCharacterToOtherClients = true
 
   socket.on("message", function message(rawData, isBinary) {
     if (isBinary) {

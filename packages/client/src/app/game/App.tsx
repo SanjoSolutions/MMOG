@@ -19,6 +19,7 @@ import { CharacterWithOneSpritesheet } from "../../../../game-engine/index.js"
 import { Object as GameObject } from "../../../../game-engine/Object.js"
 import {
   guidToCharacter,
+  removeCharacterByGUID,
   retrieveCharacterByGUID,
   setCharacter,
 } from "../../../../shared/characters.js"
@@ -31,6 +32,7 @@ import { now } from "../../../../shared/now.js"
 import { ObjectType } from "../../../../shared/ObjectType.js"
 import { PlantType } from "../../../../shared/PlantType.js"
 import type { Character as CharacterProto } from "../../../../shared/proto/Character.js"
+import type { Despawn } from "../../../../shared/proto/Despawn.js"
 import { MessageType as MessageType2 } from "../../../../shared/proto/Message.js"
 import { Move } from "../../../../shared/proto/Move.js"
 import type { Spawn } from "../../../../shared/proto/Spawn.js"
@@ -468,6 +470,9 @@ export function App() {
                 case MessageType2.Move:
                   handleMove(data)
                   break
+                case MessageType2.Despawn:
+                  handleDespawn(data)
+                  break
               }
 
               // const body = JSON.parse(event.data)
@@ -543,6 +548,14 @@ export function App() {
                 character.baseX = character.x
                 character.baseY = character.y
                 character.whenMovingHasChanged = data.whenMovingHasChanged
+              }
+            }
+
+            function handleDespawn(data: Despawn) {
+              const character = retrieveCharacterByGUID(data.id)
+              if (character) {
+                objectsContainer.removeChild(character.sprite)
+                removeCharacterByGUID(data.id)
               }
             }
 
