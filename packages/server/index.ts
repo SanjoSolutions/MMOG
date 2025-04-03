@@ -3,11 +3,15 @@ import { randomUUID } from "crypto"
 import { createServer, IncomingMessage } from "http"
 import { WebSocket, WebSocketServer } from "ws"
 import { Character } from "../game-engine/Character.js"
+import { generateRandomInteger } from "../game-engine/generateRandomInteger.js"
+import { SPEED } from "../game-engine/speed.js"
 import { Characters } from "../shared/characters.js"
 import type { Connection } from "../shared/database.js"
+import { Direction } from "../shared/Direction.js"
 import type { ID } from "../shared/ID.js"
 import { deserializeMessage, serializeMessage } from "../shared/message.js"
 import { now } from "../shared/now.js"
+import { CharacterType } from "../shared/proto/CharacterType.js"
 import { MessageType } from "../shared/proto/Message.js"
 import type { Move } from "../shared/proto/Move.js"
 import type { Test } from "../shared/proto/Test.js"
@@ -19,6 +23,38 @@ import { sendMovementToClient } from "./websocket/sendMovementToClient.js"
 
 const characters = new Characters()
 
+const directions = [
+  Direction.Up,
+  Direction.Right,
+  Direction.Down,
+  Direction.Left,
+  Direction.Up | Direction.Right,
+  Direction.Up | Direction.Left,
+  Direction.Down | Direction.Right,
+  Direction.Down | Direction.Left,
+]
+
+function randomDirection(): Direction {
+  return randomItem(directions)
+}
+
+function randomItem<T>(items: T[]): T {
+  return items[generateRandomInteger(0, items.length - 1)]
+}
+
+// Spawn cows
+for (let i = 1; i <= 10; i++) {
+  const cow = new Character()
+  cow.type = CharacterType.Cow
+  cow.id = randomUUID()
+  cow.x = generateRandomInteger(-300, 300)
+  cow.y = generateRandomInteger(-300, 300)
+  cow.baseX = cow.x
+  cow.baseY = cow.y
+  cow.speed = 0.5 * SPEED
+  characters.setCharacter(cow)
+}
+
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_ANON_KEY!,
@@ -26,7 +62,7 @@ const supabase = createClient(
 
 const httpServer = createServer()
 const server = Object.assign(new WebSocketServer({ noServer: true }), {
-  sendToAll(data: string) {
+  sendToAll(data: Uint8Array) {
     this.doForAll((client) => {
       client.send(data)
     })
@@ -40,7 +76,7 @@ const server = Object.assign(new WebSocketServer({ noServer: true }), {
     })
   },
 
-  sendToAllOthers(data: Uint8Array<ArrayBufferLike>, socket: WebSocket) {
+  sendToAllOthers(data: Uint8Array, socket: WebSocket) {
     this.doForAllOthers((client) => {
       client.send(data)
     }, socket)
@@ -54,6 +90,37 @@ const server = Object.assign(new WebSocketServer({ noServer: true }), {
     })
   },
 })
+
+function makeCowsMove() {
+  for (const character of characters.guidToCharacter.values()) {
+    if (character.type === CharacterType.Cow) {
+      const cow = character
+      cow.baseX = cow.x
+      cow.baseY = cow.y
+      cow.updatePosition(now())
+      cow.isMoving = Math.random() < 0.3 ? true : false
+      if (cow.isMoving) {
+        const direction = randomDirection()
+        cow.movingDirection = direction
+        cow.facingDirection = direction
+      }
+      cow.whenMovingHasChanged = now()
+
+      server.sendToAll(
+        serializeMessage({
+          type: MessageType.Move,
+          data: {
+            character: cow,
+            whenMovingHasChanged: cow.whenMovingHasChanged,
+          },
+        }),
+      )
+    }
+  }
+}
+
+makeCowsMove()
+setInterval(makeCowsMove, 3000)
 
 export type Server = typeof server
 
@@ -118,6 +185,7 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
   const character = Object.assign(new Character(), {
     userId: socket.userId,
     id: randomUUID(),
+    type: CharacterType.PlayerCharacter,
   })
 
   characters.setCharacter(character)

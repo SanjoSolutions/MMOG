@@ -21,6 +21,14 @@
   ],
   "javascript.preferences.importModuleSpecifierEnding": "js",
   "typescript.preferences.importModuleSpecifierEnding": "js",
-  "cSpell.words": ["despawn", "Despawn", "supabase"],
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "cSpell.words": ["despawn", "Despawn", "Spritesheet", "supabase"],
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "protoc": {
+    "path": "node_modules/@protobuf-ts/protoc/installed/protoc-30.2-win64/bin/protoc.exe",
+    "compile_on_save": false,
+    "options": [
+      "--ts_out=packages/shared/proto",
+      "--proto_path=packages/shared/proto"
+    ]
+  }
 }

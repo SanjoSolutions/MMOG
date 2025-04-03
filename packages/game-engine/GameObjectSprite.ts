@@ -34,7 +34,7 @@ export abstract class GameObjectSprite {
     let index = 0
     while (
       index < this.container.children.length &&
-      this.y > this.container.getChildAt(index).y
+      this.sprite.y > this.container.getChildAt(index).y
     ) {
       index++
     }

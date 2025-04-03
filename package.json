@@ -9,7 +9,7 @@
     "dev:client": "cd packages/client && pnpm run dev",
     "dev:proto": "nodemon --exec \"pnpm run build:proto\" --watch packages/shared/proto --ext proto",
     "build": "pnpm run build:proto",
-    "build:proto": "protoc --ts_out=packages/shared/proto --proto_path packages/shared/proto packages/shared/proto/*.proto"
+    "build:proto": "protoc --ts_out=packages/shared/proto --proto_path=packages/shared/proto packages/shared/proto/*.proto"
   },
   "homepage": "https://github.com/SanjoSolutions/projects/tree/main/mmog",
   "license": "Unlicense",

@@ -13,13 +13,18 @@ import {
 } from "pixi.js"
 import { useCallback, useEffect, useMemo } from "react"
 import { Character } from "../../../../game-engine/Character.js"
-import { CharacterSpriteWithOneSpriteSheet } from "../../../../game-engine/CharacterSpriteWithOneSpriteSheet.js"
+import {
+  CharacterSpriteWithOneSpriteSheet,
+  loadSpriteSheet,
+  loadUniversalSpriteSheet,
+} from "../../../../game-engine/CharacterSpriteWithOneSpriteSheet.js"
 import type { GUID } from "../../../../game-engine/GUID.js"
 import { GameObject } from "../../../../game-engine/GameObject.js"
 import { createAnimatedSprite } from "../../../../game-engine/createAnimatedSprite.js"
 import { Direction } from "../../../../shared/Direction.js"
 import { ObjectType } from "../../../../shared/ObjectType.js"
 import { PlantType } from "../../../../shared/PlantType.js"
+import { CharacterType } from "../../../../shared/proto/CharacterType.js"
 import type { Despawn } from "../../../../shared/proto/Despawn.js"
 import { Move } from "../../../../shared/proto/Move.js"
 import type { Spawn } from "../../../../shared/proto/Spawn.js"
@@ -138,8 +143,8 @@ export function App() {
 
         protected _stop() {}
 
-        public update(data: any): void {
-          super.update(data)
+        public update(data: any, now: number): void {
+          super.update(data, now)
           this.plantType = data.plantType
           this.stage = data.stage
         }
@@ -280,6 +285,13 @@ export function App() {
         height: 64,
       }
 
+      const cow = new CharacterSpriteWithOneSpriteSheet(
+        {},
+        app.stage,
+        await loadSpriteSheet("/assets/sprites/cow/cow_walk.json"),
+      )
+      objectsContainer.addChild(cow.sprite)
+
       app.ticker.add(() => {
         if (characterSprite) {
           const character = characterSprite.object as Character
@@ -296,7 +308,7 @@ export function App() {
             down,
             pointerState,
           })
-          const facingDirection = isMoving
+          const movingDirection = isMoving
             ? convertKeysDownToDirection({
                 left,
                 right,
@@ -304,11 +316,14 @@ export function App() {
                 down,
                 pointerState,
               })
+            : character.movingDirection
+          const facingDirection = isMoving
+            ? movingDirection
             : character.facingDirection
 
           const hasChanged =
             isMoving !== character.isMoving ||
-            facingDirection !== character.facingDirection
+            movingDirection !== character.movingDirection
 
           const previousX = character.x
           const previousY = character.y
@@ -316,16 +331,17 @@ export function App() {
           const whenMovingHasChanged = gameClient.now()
 
           if (hasChanged) {
-            character.updatePosition()
+            character.updatePosition(gameClient.now())
             character.baseX = character.x
             character.baseY = character.y
             character.whenMovingHasChanged = whenMovingHasChanged
             character.isMoving = isMoving
+            character.movingDirection = movingDirection
             character.facingDirection = facingDirection
           }
 
           if (character.isMoving) {
-            character.updatePosition()
+            character.updatePosition(gameClient.now())
           }
 
           characterSprite.sync()
@@ -341,29 +357,30 @@ export function App() {
             !gameClient._lastSentMovement ||
             isMoving !== gameClient._lastSentMovement.isMoving ||
             ((left || right || up || down) &&
-              facingDirection !== gameClient._lastSentMovement.facingDirection)
+              movingDirection !== gameClient._lastSentMovement.facingDirection)
           ) {
             gameClient.move({
               character: {
                 id: character.id,
-                isMoving,
+                isMoving: character.isMoving,
                 x: character.x,
                 y: character.y,
-                facingDirection,
+                facingDirection: character.facingDirection,
+                movingDirection: character.movingDirection,
               },
               whenMovingHasChanged,
             })
           }
 
           for (const object of objects.values()) {
-            object.updatePosition()
+            object.updatePosition(gameClient.now())
           }
         }
 
         const playerCharacter = characterSprite?.object
         for (const character of gameClient.characters.guidToCharacter.values()) {
           if (!playerCharacter || character.id !== playerCharacter.id) {
-            character.updatePosition()
+            character.updatePosition(gameClient.now())
             const characterSprite = guidToSprite.get(character.id)
             if (characterSprite) {
               characterSprite.sync()
@@ -415,9 +432,10 @@ export function App() {
                 const characterSprite2 = new CharacterSpriteWithOneSpriteSheet(
                   character2,
                   app.stage,
-                  "/npc_woman.png",
+                  character2.type === CharacterType.Cow
+                    ? await loadSpriteSheet("/assets/sprites/cow/cow_walk.json")
+                    : await loadUniversalSpriteSheet("/npc_woman.png"),
                 )
-                await characterSprite2.loadSpriteSheet()
                 guidToSprite.set(character2.id, characterSprite2)
                 objectsContainer.addChild(characterSprite2.sprite)
                 if (data.canMove) {

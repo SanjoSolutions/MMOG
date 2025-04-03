@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+enum CharacterType {
+  CHARACTER_TYPE_None = 0;
+  CHARACTER_TYPE_PlayerCharacter = 1;
+  CHARACTER_TYPE_Cow = 2;
+}

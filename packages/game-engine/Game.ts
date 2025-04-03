@@ -3,7 +3,10 @@ import * as PIXI from "pixi.js"
 import { Application, Assets, Container, Sprite } from "pixi.js"
 import { Subject } from "rxjs"
 import type { Character } from "./Character.js"
-import { CharacterSpriteWithOneSpriteSheet } from "./CharacterSpriteWithOneSpriteSheet.js"
+import {
+  CharacterSpriteWithOneSpriteSheet,
+  loadUniversalSpriteSheet,
+} from "./CharacterSpriteWithOneSpriteSheet.js"
 import {
   Dialog,
   Option,
@@ -102,10 +105,10 @@ export class Game<T extends IGameServerAPI, M> {
 
   async createCharacter(characterData: CharacterProto) {
     const character = new CharacterSpriteWithOneSpriteSheet(
-      "character.png",
+      {},
       this.app.stage,
+      await loadUniversalSpriteSheet('"/character.png"'),
     )
-    await character.loadSpriteSheet()
     Object.assign(character, characterData)
     if (character.id) {
       this.characters.set(character.id, character)

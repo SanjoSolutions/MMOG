@@ -16679,4 +16679,10 @@ wrists/lace/male/silver.png,,bluecarrot16,CC-BY-SA 3.0,https://opengameart.org/c
 wrists/lace/male/teal.png,,bluecarrot16,CC-BY-SA 3.0,https://opengameart.org/content/lpc-pirates,,,,,,,,,,,,,,,OK
 wrists/lace/male/yellow.png,,bluecarrot16,CC-BY-SA 3.0,https://opengameart.org/content/lpc-pirates,,,,,,,,,,,,,,,OK`,
   },
+  {
+    name: 'LPC style farm animals',
+    author: 'daneeklu',
+    url: 'https://opengameart.org/content/lpc-style-farm-animals',
+    licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+  },
 ]
