@@ -21,6 +21,11 @@ import { scanThroughAll } from "./database/scanThroughAll.js"
 import { HALF_HEIGHT, HALF_WIDTH } from "./maximumSupportedResolution.js"
 import { sendMovementToClient } from "./websocket/sendMovementToClient.js"
 
+export class WebSocketWithUserData extends WebSocket {
+  userId?: string
+  viewportSize?: { width: number; height: number }
+}
+
 const characters = new Characters()
 
 const directions = [
@@ -61,35 +66,49 @@ const supabase = createClient(
 )
 
 const httpServer = createServer()
-const server = Object.assign(new WebSocketServer({ noServer: true }), {
-  sendToAll(data: Uint8Array) {
-    this.doForAll((client) => {
-      client.send(data)
-    })
-  },
+const server = Object.assign(
+  new WebSocketServer<typeof WebSocketWithUserData>({ noServer: true }),
+  {
+    sendTo(
+      data: Uint8Array,
+      predicate: (client: WebSocketWithUserData) => boolean,
+    ) {
+      server.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN && predicate(client)) {
+          client.send(data)
+        }
+      })
+    },
 
-  doForAll(callback: (client: WebSocket) => void) {
-    server.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        callback(client)
-      }
-    })
-  },
+    sendToAll(data: Uint8Array) {
+      this.doForAll((client) => {
+        client.send(data)
+      })
+    },
 
-  sendToAllOthers(data: Uint8Array, socket: WebSocket) {
-    this.doForAllOthers((client) => {
-      client.send(data)
-    }, socket)
-  },
+    doForAll(callback: (client: WebSocket) => void) {
+      server.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+          callback(client)
+        }
+      })
+    },
 
-  doForAllOthers(callback: (client: WebSocket) => void, socket: WebSocket) {
-    server.clients.forEach(function each(client) {
-      if (client !== socket && client.readyState === WebSocket.OPEN) {
-        callback(client)
-      }
-    })
+    sendToAllOthers(data: Uint8Array, socket: WebSocket) {
+      this.doForAllOthers((client) => {
+        client.send(data)
+      }, socket)
+    },
+
+    doForAllOthers(callback: (client: WebSocket) => void, socket: WebSocket) {
+      server.clients.forEach(function each(client) {
+        if (client !== socket && client.readyState === WebSocket.OPEN) {
+          callback(client)
+        }
+      })
+    },
   },
-})
+)
 
 function makeCowsMove() {
   for (const character of characters.guidToCharacter.values()) {
@@ -156,11 +175,7 @@ async function authenticate(request: IncomingMessage) {
   }
 }
 
-export interface WebSocketWithUserId extends WebSocket {
-  userId: string
-}
-
-server.on("connection", function connection(socket: WebSocketWithUserId) {
+server.on("connection", function connection(socket: WebSocketWithUserData) {
   let hasSentCharacterToOtherClients = false
 
   socket.on("error", console.error)
@@ -202,7 +217,10 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
 
   const playerCharacter = character
   for (const character of characters.guidToCharacter.values()) {
-    if (character.id !== playerCharacter.id) {
+    if (
+      character.id !== playerCharacter.id &&
+      isCloseEnough(socket, playerCharacter, character)
+    ) {
       socket.send(
         serializeMessage({
           type: MessageType.Spawn,
@@ -215,7 +233,7 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
     }
   }
 
-  server.sendToAllOthers(
+  server.sendTo(
     serializeMessage({
       type: MessageType.Spawn,
       data: {
@@ -223,7 +241,16 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
         canMove: false,
       },
     }),
-    socket,
+    (socket2: WebSocketWithUserData) => {
+      if (socket2 !== socket) {
+        const character2 = characters.retrieveCharacterByUserId(socket2.userId)
+        return Boolean(
+          character2 && isCloseEnough(socket2, character2, playerCharacter),
+        )
+      } else {
+        return false
+      }
+    },
   )
   hasSentCharacterToOtherClients = true
 
@@ -248,11 +275,29 @@ server.on("connection", function connection(socket: WebSocketWithUserId) {
   })
 })
 
-function handleTest(socket: WebSocketWithUserId, message: Test) {}
+function isCloseEnough(
+  socket: WebSocketWithUserData,
+  playerCharacter: Character,
+  otherCharacter: Character,
+): boolean {
+  if (socket.viewportSize) {
+    const halfWidth = socket.viewportSize.width / 2
+    const halfHeight = socket.viewportSize.height / 2
+    const offset = playerCharacter.speed * 1000
+    return (
+      Math.abs(playerCharacter.x - otherCharacter.x) + offset <= halfWidth &&
+      Math.abs(playerCharacter.y - otherCharacter.y) + offset <= halfHeight
+    )
+  } else {
+    return false
+  }
+}
 
-function handleTest2(socket: WebSocketWithUserId, message: Test2) {}
+function handleTest(socket: WebSocketWithUserData, message: Test) {}
 
-function handleTimeSync(socket: WebSocketWithUserId, message: TimeSync) {
+function handleTest2(socket: WebSocketWithUserData, message: Test2) {}
+
+function handleTimeSync(socket: WebSocketWithUserData, message: TimeSync) {
   socket.send(
     serializeMessage({
       type: MessageType.TimeSync,
@@ -266,7 +311,7 @@ function handleTimeSync(socket: WebSocketWithUserId, message: TimeSync) {
 
 const MAXIMUM_ALLOWED_TIME_DELTA = 1000 // ms
 
-function handleMove(socket: WebSocketWithUserId, message: Move) {
+function handleMove(socket: WebSocketWithUserData, message: Move) {
   console.log("move", message)
   const character = characters.retrieveCharacterByUserId(socket.userId)
   if (

@@ -15,6 +15,9 @@ export class GameObject {
   baseX: number = 0
   baseY: number = 0
   whenMovingHasChanged: number | null = null
+  /**
+   * In pixel per millisecond.
+   */
   speed = SPEED
 
   updatePosition(now: number): void {
